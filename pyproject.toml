@@ -1,0 +1,22 @@
+[project]
+name = "rxrx1-sirna-classification"
+version = "0.1.0"
+description = "RxRx1 siRNA classification for biological microscopy replicate identification"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "pillow>=10.0.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
