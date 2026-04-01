@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import torch
@@ -44,14 +45,30 @@ class RxRxDataset(Dataset):
     def __len__(self):
         return len(self.df)
 
+    def _get_img_path(self, experiment, plate, well, site, channel):
+        return os.path.join(
+            DATA_DIR,
+            self.mode,
+            experiment,
+            f"Plate{plate}",
+            f"{well}_s{site}_w{channel}.png",
+        )
+
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
 
         channels = []
         for site in range(1, 3):
             for ch in range(1, 7):
-                path = f"{DATA_DIR}/{self.mode}/{row['experiment']}/Plate{row['plate']}/{row['well']}_s{site}_w{ch}.png"
-                img = Image.open(path).resize((IMG_SIZE, IMG_SIZE))
+                path = self._get_img_path(
+                    row["experiment"], row["plate"], row["well"], site, ch
+                )
+
+                if not os.path.exists(path):
+                    img = Image.new("L", (IMG_SIZE, IMG_SIZE))
+                else:
+                    img = Image.open(path).resize((IMG_SIZE, IMG_SIZE))
+
                 channels.append(np.array(img))
 
         x = np.stack(channels, axis=-1)
