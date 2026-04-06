@@ -18,7 +18,7 @@ from sklearn.model_selection import GroupKFold
 # ==========================================
 # 1. Config
 # ==========================================
-DATA_DIR = '/kaggle/input/recursion-cellular-image-classification'
+DATA_DIR = '/kaggle/input/competitions/recursion-cellular-image-classification'
 IMG_SIZE = 128
 BATCH_SIZE = 32
 EPOCHS = 3
@@ -42,8 +42,8 @@ NUM_CLASSES = train_df['sirna'].nunique()
 gkf = GroupKFold(n_splits=5)
 train_idx, val_idx = next(gkf.split(train_df, groups=train_df['experiment']))
 
-train_df = train_df.iloc[train_idx].reset_index(drop=True)
-val_df = train_df.iloc[val_idx].reset_index(drop=True)
+train_split = train_df.iloc[train_idx].reset_index(drop=True)
+val_split   = train_df.iloc[val_idx].reset_index(drop=True)
 
 # ==========================================
 # 3. Dataset
@@ -89,15 +89,19 @@ class RxRxDataset(Dataset):
 # 4. Model (FAST)
 # ==========================================
 def get_model():
-    model = models.resnet18(pretrained=True)
+    # Use modern weights parameter
+    model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
 
-    # modify input channels
+    # Save the original pretrained weights before overwriting the layer
+    pretrained_weights = model.conv1.weight.clone()
+
+    # modify input channels to 6
     model.conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
-    # init weights
+    # init weights correctly by mapping the 3 pretrained channels to the 6 new channels
     with torch.no_grad():
-        model.conv1.weight[:, :3] = model.conv1.weight[:, :3]
-        model.conv1.weight[:, 3:] = model.conv1.weight[:, :3]
+        model.conv1.weight[:, :3] = pretrained_weights
+        model.conv1.weight[:, 3:] = pretrained_weights
 
     model.fc = nn.Linear(model.fc.in_features, NUM_CLASSES)
     return model.to(DEVICE)
@@ -107,8 +111,9 @@ model = get_model()
 # ==========================================
 # 5. Loaders
 # ==========================================
-train_loader = DataLoader(RxRxDataset(train_df), batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
-val_loader = DataLoader(RxRxDataset(val_df), batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+# FIX: using `train_split` and `val_split` instead of `train_df` and undefined `val_df`
+train_loader = DataLoader(RxRxDataset(train_split), batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+val_loader = DataLoader(RxRxDataset(val_split), batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
 # ==========================================
 # 6. Training Setup
