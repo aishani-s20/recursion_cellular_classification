@@ -17,114 +17,111 @@ class Config:
     TRAIN_CSV = f'{DATA_DIR}/train.csv'
     TEST_CSV = '/kaggle/input/datasets/himanshusardana2/corrected-test-csv-recurrence-cellular/test.csv'
     
-    MODEL_NAME = 'resnet50'  
-    IMG_SIZE = 320  
+    MODEL_NAME = 'efficientnet_b0'
+    IMG_SIZE = 384
     BATCH_SIZE = 32
-    EPOCHS = 10  
+    EPOCHS = 10
     LR = 3e-4
+    LABEL_SMOOTHING = 0.1
     
     NUM_WORKERS = 2
     SEED = 42
     NUM_CLASSES = 1108
-    
-    CELL_TYPES = ['HUVEC']  
-    
-    CONVERT_SIRNA = True
 
 def set_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 set_seed(Config.SEED)
 
 class CellularDataset(Dataset):
-    def __init__(self, df, data_dir, mode='train', transform=None):
-        self.df = df
+    def __init__(self, df, data_dir, mode='train', site=None):
+        self.df = df.reset_index(drop=True)
         self.data_dir = data_dir
         self.mode = mode
-        self.transform = transform
+        self.site = site
         
     def __len__(self):
         return len(self.df)
     
-    def load_image(self, row):
-        """Load 6-channel image"""
+    def load_image(self, row, site):
         exp = row['experiment']
         plate = row['plate']
         well = row['well']
         
-        if self.mode == 'train':
-            path_template = f'{self.data_dir}/train/{exp}/Plate{plate}/{well}_s1_w'
+        if self.mode == 'test':
+            path_template = f'{self.data_dir}/test/{exp}/Plate{plate}/{well}_s{site}_w'
         else:
-            path_template = f'{self.data_dir}/test/{exp}/Plate{plate}/{well}_s1_w'
+            path_template = f'{self.data_dir}/train/{exp}/Plate{plate}/{well}_s{site}_w'
         
         channels = []
         for i in range(1, 7):
             img_path = f'{path_template}{i}.png'
             if os.path.exists(img_path):
                 img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-                channels.append(img)
             else:
-                # Fallback if file doesn't exist
-                channels.append(np.zeros((512, 512), dtype=np.uint8))
+                img = np.zeros((512, 512), dtype=np.uint8)
+            channels.append(img)
         
-        # Stack channels and resize
         img = np.stack(channels, axis=-1)
         img = cv2.resize(img, (Config.IMG_SIZE, Config.IMG_SIZE))
-        
+        return img.astype(np.float32) / 255.0
+    
+    def augment(self, img):
+        if self.mode != 'train':
+            return img
+        if np.random.rand() > 0.5:
+            img = np.fliplr(img).copy()
+        if np.random.rand() > 0.5:
+            img = np.flipud(img).copy()
+        if np.random.rand() > 0.5:
+            k = np.random.randint(1, 4)
+            img = np.rot90(img, k=k).copy()
         return img
     
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        img = self.load_image(row)
-        
-        # Normalize to [0, 1]
-        img = img.astype(np.float32) / 255.0
-        
-        if self.transform:
-            # Convert to PIL for transforms (handle 6 channels)
-            img = torch.from_numpy(img).permute(2, 0, 1)  # C, H, W
-        else:
-            img = torch.from_numpy(img).permute(2, 0, 1)
         
         if self.mode == 'train':
-            label = row['label']
-            return img, label
+            site = np.random.choice(['1', '2'])
+        else:
+            site = self.site if self.site is not None else '1'
+            
+        img = self.load_image(row, site)
+        img = self.augment(img)
+        img = torch.from_numpy(img).permute(2, 0, 1)
+        
+        if self.mode in ['train', 'val']:
+            return img, row['label']
         else:
             return img, row['id_code']
 
-# Model
 class CellularModel(nn.Module):
     def __init__(self, model_name, num_classes, in_channels=6):
         super().__init__()
-        # Load pretrained model
         self.backbone = timm.create_model(model_name, pretrained=True, in_chans=3)
         
-        # Modify first conv layer to accept 6 channels
-        # ResNet models in timm use 'conv1' instead of 'conv_stem'
-        if hasattr(self.backbone, 'conv1'):
-            old_conv = self.backbone.conv1
-            self.backbone.conv1 = nn.Conv2d(
+        if hasattr(self.backbone, 'conv_stem'):
+            old_conv = self.backbone.conv_stem
+            self.backbone.conv_stem = nn.Conv2d(
                 in_channels, old_conv.out_channels,
                 kernel_size=old_conv.kernel_size,
                 stride=old_conv.stride,
                 padding=old_conv.padding,
                 bias=old_conv.bias is not None
             )
-            # Initialize with average of pretrained weights
             with torch.no_grad():
-                self.backbone.conv1.weight[:, :3] = old_conv.weight
-                self.backbone.conv1.weight[:, 3:] = old_conv.weight
+                self.backbone.conv_stem.weight[:, :3] = old_conv.weight
+                self.backbone.conv_stem.weight[:, 3:] = old_conv.weight
                 if old_conv.bias is not None:
-                    self.backbone.conv1.bias = old_conv.bias
+                    self.backbone.conv_stem.bias = old_conv.bias
         
-        # Get number of features
         n_features = self.backbone.get_classifier().in_features
-        self.backbone.reset_classifier(0)  # Remove classifier
+        self.backbone.reset_classifier(0)
         
-        # Custom classifier
         self.classifier = nn.Sequential(
             nn.Dropout(0.3),
             nn.Linear(n_features, num_classes)
@@ -134,7 +131,6 @@ class CellularModel(nn.Module):
         features = self.backbone(x)
         return self.classifier(features)
 
-# Training function
 def train_epoch(model, loader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
@@ -160,7 +156,6 @@ def train_epoch(model, loader, criterion, optimizer, device):
     
     return running_loss/len(loader), 100.*correct/total
 
-# Validation function
 def validate(model, loader, criterion, device):
     model.eval()
     running_loss = 0.0
@@ -180,62 +175,85 @@ def validate(model, loader, criterion, device):
     
     return running_loss/len(loader), 100.*correct/total
 
-# Main training pipeline
+def predict_with_tta(model, df, data_dir, device):
+    model.eval()
+    configs = [('1', None), ('1', 'h'), ('1', 'v'), ('2', None), ('2', 'h'), ('2', 'v')]
+    all_probs = []
+    ids = None
+    
+    for site, flip in configs:
+        dataset = CellularDataset(df, data_dir, mode='test', site=site)
+        loader = DataLoader(dataset, batch_size=Config.BATCH_SIZE,
+                          shuffle=False, num_workers=Config.NUM_WORKERS)
+        
+        probs = []
+        batch_ids = []
+        with torch.no_grad():
+            for imgs, img_ids in tqdm(loader, desc=f'Site{site} {flip or ""}'):
+                imgs = imgs.to(device)
+                if flip == 'h':
+                    imgs = torch.flip(imgs, dims=[3])
+                elif flip == 'v':
+                    imgs = torch.flip(imgs, dims=[2])
+                outputs = model(imgs)
+                probs.append(outputs.softmax(dim=1).cpu())
+                batch_ids.extend(img_ids)
+        
+        probs = torch.cat(probs, dim=0)
+        all_probs.append(probs)
+        if ids is None:
+            ids = batch_ids
+    
+    avg_probs = torch.stack(all_probs).mean(dim=0)
+    preds = avg_probs.argmax(dim=1).numpy()
+    return preds, ids
+
 def main():
-    # Load data
     print("Loading data...")
     train_df = pd.read_csv(Config.TRAIN_CSV)
     test_df = pd.read_csv(Config.TEST_CSV)
     
-    # Extract cell type from experiment column
     train_df['cell_type'] = train_df['experiment'].str.split('-').str[0]
     test_df['cell_type'] = test_df['experiment'].str.split('-').str[0]
-    
-    # Filter by cell type for speed
-    train_df = train_df[train_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
-    # test_df = test_df[test_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
     
     print(f"Training samples: {len(train_df)}")
     print(f"Test samples: {len(test_df)}")
     print(f"Cell types in train: {train_df['cell_type'].unique()}")
     
-    # Convert sirna labels to numeric (sirna_1 -> 1, sirna_10 -> 10, etc.)
     train_df['sirna_id'] = train_df['sirna'].str.replace('sirna_', '').astype(int)
-    
-    # Create label mapping (need to map to 0-indexed consecutive integers)
     unique_sirnas = sorted(train_df['sirna_id'].unique())
-    sirna_to_label = {sirna: idx for idx, sirna in enumerate(unique_sirnas)}
+    sirna_to_label = {s: i for i, s in enumerate(unique_sirnas)}
     train_df['label'] = train_df['sirna_id'].map(sirna_to_label)
     
-    print(f"Number of unique sirnas: {len(unique_sirnas)}")
-    print(f"Label range: 0 to {train_df['label'].max()}")
-    
-    # Update NUM_CLASSES based on actual data
     Config.NUM_CLASSES = len(unique_sirnas)
+    print(f"Number of classes: {Config.NUM_CLASSES}")
     
-    # Split train/val
-    train_data, val_data = train_test_split(train_df, test_size=0.15, random_state=Config.SEED, stratify=train_df['label'])
+    train_data, val_data = train_test_split(
+        train_df, test_size=0.15, random_state=Config.SEED,
+        stratify=train_df['label']
+    )
     
-    # Create datasets
-    train_dataset = CellularDataset(train_data, Config.DATA_DIR, mode='train')
-    val_dataset = CellularDataset(val_data, Config.DATA_DIR, mode='train')
+    train_loader = DataLoader(
+        CellularDataset(train_data, Config.DATA_DIR, mode='train'),
+        batch_size=Config.BATCH_SIZE, shuffle=True,
+        num_workers=Config.NUM_WORKERS, pin_memory=True
+    )
     
-    # Create dataloaders
-    train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, 
-                              shuffle=True, num_workers=Config.NUM_WORKERS, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=Config.BATCH_SIZE, 
-                            shuffle=False, num_workers=Config.NUM_WORKERS, pin_memory=True)
+    val_loader = DataLoader(
+        CellularDataset(val_data, Config.DATA_DIR, mode='val', site='1'),
+        batch_size=Config.BATCH_SIZE, shuffle=False,
+        num_workers=Config.NUM_WORKERS, pin_memory=True
+    )
     
-    # Create model
     print(f"Creating model: {Config.MODEL_NAME}...")
     model = CellularModel(Config.MODEL_NAME, Config.NUM_CLASSES).to(device)
     
-    # Loss and optimizer
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(label_smoothing=Config.LABEL_SMOOTHING)
     optimizer = torch.optim.AdamW(model.parameters(), lr=Config.LR, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=Config.EPOCHS)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=Config.EPOCHS, T_mult=1
+    )
     
-    # Training loop
     best_acc = 0
     for epoch in range(Config.EPOCHS):
         print(f"\nEpoch {epoch+1}/{Config.EPOCHS}")
@@ -243,52 +261,28 @@ def main():
         val_loss, val_acc = validate(model, val_loader, criterion, device)
         scheduler.step()
         
-        print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%")
-        print(f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
+        print(f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.2f}%")
+        print(f"Val Loss: {val_loss:.4f}, Acc: {val_acc:.2f}%")
         
-        # Save best model
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save(model.state_dict(), 'best_resnet50.pth')
-            print(f"Saved best model with accuracy: {best_acc:.2f}%")
+            torch.save(model.state_dict(), 'best_efficientnet_b0.pth')
+            print(f"Saved best model: {best_acc:.2f}%")
     
-    # Load best model for inference
-    print("\nLoading best model for inference...")
-    model.load_state_dict(torch.load('best_resnet50.pth'))
+    print("\nInference with TTA (dual site + fl)...")
+    model.load_state_dict(torch.load('best_efficientnet_b0.pth'))
     
-    # Inference on test set
-    print("Generating predictions...")
-    test_dataset = CellularDataset(test_df, Config.DATA_DIR, mode='test')
-    test_loader = DataLoader(test_dataset, batch_size=Config.BATCH_SIZE, 
-                             shuffle=False, num_workers=Config.NUM_WORKERS)
+    predictions, ids = predict_with_tta(model, test_df, Config.DATA_DIR, device)
     
-    model.eval()
-    predictions = []
-    ids = []
+    label_to_sirna = {v: k for k, v in sirna_to_label.items()}
+    predictions = [label_to_sirna[p] for p in predictions]
     
-    with torch.no_grad():
-        for imgs, img_ids in tqdm(test_loader, desc='Inference'):
-            imgs = imgs.to(device)
-            outputs = model(imgs)
-            _, preds = outputs.max(1)
-            
-            predictions.extend(preds.cpu().numpy())
-            ids.extend(img_ids)
-    
-    # Convert predictions back to sirna format
-    label_to_sirna = {idx: sirna for sirna, idx in sirna_to_label.items()}
-    predictions_sirna = [label_to_sirna[pred] for pred in predictions]
-    
-    # Create submission
     submission = pd.DataFrame({
         'id_code': ids,
-        'sirna': predictions_sirna
+        'sirna': predictions
     })
-    submission.to_csv('submission.csv', index=False)
-    print("\nSubmission saved to submission.csv")
-    print(f"Best validation accuracy: {best_acc:.2f}%")
-    print("Sample predictions:")
-    print(submission.head(10))
+    submission.to_csv('submission_efficientnet_b0.csv', index=False)
+    print(f"Saved submission_efficientnet_b0.csv | Best val acc: {best_acc:.2f}%")
 
 if __name__ == '__main__':
     main()

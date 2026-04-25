@@ -1,3 +1,9 @@
+"""
+Vision Transformer (ViT) - Transformer-based Architecture
+=========================================================
+Vision Transformer for cellular image classification.
+Uses patch-based approach with self-attention.
+"""
 import numpy as np
 import pandas as pd
 import os
@@ -17,19 +23,18 @@ class Config:
     TRAIN_CSV = f'{DATA_DIR}/train.csv'
     TEST_CSV = '/kaggle/input/datasets/himanshusardana2/corrected-test-csv-recurrence-cellular/test.csv'
     
-    MODEL_NAME = 'resnet50'  
-    IMG_SIZE = 320  
+    MODEL_NAME = 'vit_tiny_patch16_224'  # Vision Transformer tiny
+    IMG_SIZE = 224
     BATCH_SIZE = 32
-    EPOCHS = 10  
+    EPOCHS = 10
     LR = 3e-4
     
     NUM_WORKERS = 2
     SEED = 42
     NUM_CLASSES = 1108
     
-    CELL_TYPES = ['HUVEC']  
-    
-    CONVERT_SIRNA = True
+    CELL_TYPES = ['HUVEC']
+
 
 def set_seed(seed):
     np.random.seed(seed)
@@ -39,92 +44,102 @@ def set_seed(seed):
 
 set_seed(Config.SEED)
 
+
 class CellularDataset(Dataset):
-    def __init__(self, df, data_dir, mode='train', transform=None):
-        self.df = df
+    """Dataset for 6-channel cellular microscopy images."""
+    
+    def __init__(self, df, data_dir, mode='train', site='1'):
+        self.df = df.reset_index(drop=True)
         self.data_dir = data_dir
         self.mode = mode
-        self.transform = transform
-        
+        self.site = site
+    
     def __len__(self):
         return len(self.df)
     
     def load_image(self, row):
-        """Load 6-channel image"""
+        """Load 6-channel image from disk."""
         exp = row['experiment']
         plate = row['plate']
         well = row['well']
         
-        if self.mode == 'train':
-            path_template = f'{self.data_dir}/train/{exp}/Plate{plate}/{well}_s1_w'
+        if self.mode == 'test':
+            path_template = f'{self.data_dir}/test/{exp}/Plate{plate}/{well}_s{self.site}_w'
         else:
-            path_template = f'{self.data_dir}/test/{exp}/Plate{plate}/{well}_s1_w'
+            path_template = f'{self.data_dir}/train/{exp}/Plate{plate}/{well}_s{self.site}_w'
         
         channels = []
         for i in range(1, 7):
             img_path = f'{path_template}{i}.png'
             if os.path.exists(img_path):
                 img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-                channels.append(img)
             else:
-                # Fallback if file doesn't exist
-                channels.append(np.zeros((512, 512), dtype=np.uint8))
+                img = np.zeros((512, 512), dtype=np.uint8)
+            channels.append(img)
         
-        # Stack channels and resize
         img = np.stack(channels, axis=-1)
         img = cv2.resize(img, (Config.IMG_SIZE, Config.IMG_SIZE))
+        return img.astype(np.float32) / 255.0
+    
+    def augment(self, img):
+        """Light data augmentation."""
+        if self.mode != 'train':
+            return img
+        
+        if np.random.rand() > 0.5:
+            img = np.fliplr(img).copy()
+        if np.random.rand() > 0.5:
+            img = np.flipud(img).copy()
         
         return img
     
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
         img = self.load_image(row)
-        
-        # Normalize to [0, 1]
-        img = img.astype(np.float32) / 255.0
-        
-        if self.transform:
-            # Convert to PIL for transforms (handle 6 channels)
-            img = torch.from_numpy(img).permute(2, 0, 1)  # C, H, W
-        else:
-            img = torch.from_numpy(img).permute(2, 0, 1)
+        img = self.augment(img)
+        img = torch.from_numpy(img).permute(2, 0, 1)
         
         if self.mode == 'train':
-            label = row['label']
-            return img, label
+            return img, row['label']
         else:
             return img, row['id_code']
 
-# Model
-class CellularModel(nn.Module):
+
+class ViTModel(nn.Module):
+    """Vision Transformer with modified first conv layer for 6-channel input."""
+    
     def __init__(self, model_name, num_classes, in_channels=6):
         super().__init__()
-        # Load pretrained model
+        
+        # Load pretrained ViT model
         self.backbone = timm.create_model(model_name, pretrained=True, in_chans=3)
         
-        # Modify first conv layer to accept 6 channels
-        # ResNet models in timm use 'conv1' instead of 'conv_stem'
-        if hasattr(self.backbone, 'conv1'):
-            old_conv = self.backbone.conv1
-            self.backbone.conv1 = nn.Conv2d(
-                in_channels, old_conv.out_channels,
+        # Find and modify the patch embedding (conv_proj)
+        if hasattr(self.backbone, 'patch_embed'):
+            old_conv = self.backbone.patch_embed.proj
+            
+            new_conv = nn.Conv2d(
+                in_channels,
+                old_conv.out_channels,
                 kernel_size=old_conv.kernel_size,
                 stride=old_conv.stride,
-                padding=old_conv.padding,
-                bias=old_conv.bias is not None
+                padding=old_conv.padding
             )
-            # Initialize with average of pretrained weights
+            
             with torch.no_grad():
-                self.backbone.conv1.weight[:, :3] = old_conv.weight
-                self.backbone.conv1.weight[:, 3:] = old_conv.weight
+                # Replicate pretrained weights
+                new_weight = old_conv.weight.mean(dim=1, keepdim=True)
+                new_weight = new_weight.repeat(1, in_channels, 1, 1) / in_channels
+                new_conv.weight.copy_(new_weight)
                 if old_conv.bias is not None:
-                    self.backbone.conv1.bias = old_conv.bias
+                    new_conv.bias = old_conv.bias
+            
+            self.backbone.patch_embed.proj = new_conv
         
-        # Get number of features
-        n_features = self.backbone.get_classifier().in_features
-        self.backbone.reset_classifier(0)  # Remove classifier
+        # Replace classifier head
+        n_features = self.backbone.num_features
+        self.backbone.head = nn.Identity()
         
-        # Custom classifier
         self.classifier = nn.Sequential(
             nn.Dropout(0.3),
             nn.Linear(n_features, num_classes)
@@ -134,7 +149,7 @@ class CellularModel(nn.Module):
         features = self.backbone(x)
         return self.classifier(features)
 
-# Training function
+
 def train_epoch(model, loader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
@@ -156,11 +171,11 @@ def train_epoch(model, loader, criterion, optimizer, device):
         total += labels.size(0)
         correct += predicted.eq(labels).sum().item()
         
-        pbar.set_postfix({'loss': running_loss/len(loader), 'acc': 100.*correct/total})
+        pbar.set_postfix({'loss': f'{running_loss/len(loader):.4f}', 'acc': f'{100.*correct/total:.2f}%'})
     
-    return running_loss/len(loader), 100.*correct/total
+    return running_loss / len(loader), 100. * correct / total
 
-# Validation function
+
 def validate(model, loader, criterion, device):
     model.eval()
     running_loss = 0.0
@@ -178,59 +193,59 @@ def validate(model, loader, criterion, device):
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
     
-    return running_loss/len(loader), 100.*correct/total
+    return running_loss / len(loader), 100. * correct / total
 
-# Main training pipeline
+
 def main():
+    print("=" * 60)
+    print("Vision Transformer (ViT) - Transformer Architecture")
+    print("=" * 60)
+    
     # Load data
-    print("Loading data...")
+    print("\nLoading data...")
     train_df = pd.read_csv(Config.TRAIN_CSV)
     test_df = pd.read_csv(Config.TEST_CSV)
     
-    # Extract cell type from experiment column
     train_df['cell_type'] = train_df['experiment'].str.split('-').str[0]
     test_df['cell_type'] = test_df['experiment'].str.split('-').str[0]
     
-    # Filter by cell type for speed
+    # Filter HUVEC only
     train_df = train_df[train_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
-    # test_df = test_df[test_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
     
     print(f"Training samples: {len(train_df)}")
     print(f"Test samples: {len(test_df)}")
-    print(f"Cell types in train: {train_df['cell_type'].unique()}")
+    print(f"Cell types: {train_df['cell_type'].unique()}")
     
-    # Convert sirna labels to numeric (sirna_1 -> 1, sirna_10 -> 10, etc.)
+    # Convert sirna to numeric labels
     train_df['sirna_id'] = train_df['sirna'].str.replace('sirna_', '').astype(int)
-    
-    # Create label mapping (need to map to 0-indexed consecutive integers)
     unique_sirnas = sorted(train_df['sirna_id'].unique())
-    sirna_to_label = {sirna: idx for idx, sirna in enumerate(unique_sirnas)}
+    sirna_to_label = {s: i for i, s in enumerate(unique_sirnas)}
     train_df['label'] = train_df['sirna_id'].map(sirna_to_label)
     
-    print(f"Number of unique sirnas: {len(unique_sirnas)}")
-    print(f"Label range: 0 to {train_df['label'].max()}")
-    
-    # Update NUM_CLASSES based on actual data
     Config.NUM_CLASSES = len(unique_sirnas)
+    print(f"Number of classes: {Config.NUM_CLASSES}")
     
-    # Split train/val
-    train_data, val_data = train_test_split(train_df, test_size=0.15, random_state=Config.SEED, stratify=train_df['label'])
-    
-    # Create datasets
-    train_dataset = CellularDataset(train_data, Config.DATA_DIR, mode='train')
-    val_dataset = CellularDataset(val_data, Config.DATA_DIR, mode='train')
+    # Split data
+    train_data, val_data = train_test_split(
+        train_df, test_size=0.15, random_state=Config.SEED, stratify=train_df['label']
+    )
+    print(f"Train: {len(train_data)}, Val: {len(val_data)}")
     
     # Create dataloaders
-    train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, 
-                              shuffle=True, num_workers=Config.NUM_WORKERS, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=Config.BATCH_SIZE, 
-                            shuffle=False, num_workers=Config.NUM_WORKERS, pin_memory=True)
+    train_loader = DataLoader(
+        CellularDataset(train_data, Config.DATA_DIR, mode='train'),
+        batch_size=Config.BATCH_SIZE, shuffle=True, num_workers=Config.NUM_WORKERS, pin_memory=True
+    )
+    val_loader = DataLoader(
+        CellularDataset(val_data, Config.DATA_DIR, mode='train'),
+        batch_size=Config.BATCH_SIZE, shuffle=False, num_workers=Config.NUM_WORKERS, pin_memory=True
+    )
     
     # Create model
-    print(f"Creating model: {Config.MODEL_NAME}...")
-    model = CellularModel(Config.MODEL_NAME, Config.NUM_CLASSES).to(device)
+    print(f"\nCreating model: {Config.MODEL_NAME}...")
+    model = ViTModel(Config.MODEL_NAME, Config.NUM_CLASSES).to(device)
     
-    # Loss and optimizer
+    # Loss, optimizer, scheduler
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=Config.LR, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=Config.EPOCHS)
@@ -239,56 +254,49 @@ def main():
     best_acc = 0
     for epoch in range(Config.EPOCHS):
         print(f"\nEpoch {epoch+1}/{Config.EPOCHS}")
+        
         train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, device)
         val_loss, val_acc = validate(model, val_loader, criterion, device)
         scheduler.step()
         
-        print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%")
-        print(f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
+        print(f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.2f}%")
+        print(f"Val Loss: {val_loss:.4f}, Acc: {val_acc:.2f}%")
         
-        # Save best model
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save(model.state_dict(), 'best_resnet50.pth')
-            print(f"Saved best model with accuracy: {best_acc:.2f}%")
+            torch.save(model.state_dict(), 'best_vit.pth')
+            print(f"Saved best model: {best_acc:.2f}%")
     
-    # Load best model for inference
-    print("\nLoading best model for inference...")
-    model.load_state_dict(torch.load('best_resnet50.pth'))
+    # Inference
+    print("\nInference...")
+    model.load_state_dict(torch.load('best_vit.pth'))
     
-    # Inference on test set
-    print("Generating predictions...")
-    test_dataset = CellularDataset(test_df, Config.DATA_DIR, mode='test')
-    test_loader = DataLoader(test_dataset, batch_size=Config.BATCH_SIZE, 
-                             shuffle=False, num_workers=Config.NUM_WORKERS)
+    test_loader = DataLoader(
+        CellularDataset(test_df, Config.DATA_DIR, mode='test'),
+        batch_size=Config.BATCH_SIZE, shuffle=False, num_workers=Config.NUM_WORKERS
+    )
     
     model.eval()
-    predictions = []
-    ids = []
+    predictions, ids = [], []
     
     with torch.no_grad():
         for imgs, img_ids in tqdm(test_loader, desc='Inference'):
             imgs = imgs.to(device)
             outputs = model(imgs)
             _, preds = outputs.max(1)
-            
             predictions.extend(preds.cpu().numpy())
             ids.extend(img_ids)
     
-    # Convert predictions back to sirna format
-    label_to_sirna = {idx: sirna for sirna, idx in sirna_to_label.items()}
-    predictions_sirna = [label_to_sirna[pred] for pred in predictions]
-    
     # Create submission
-    submission = pd.DataFrame({
-        'id_code': ids,
-        'sirna': predictions_sirna
-    })
-    submission.to_csv('submission.csv', index=False)
-    print("\nSubmission saved to submission.csv")
-    print(f"Best validation accuracy: {best_acc:.2f}%")
-    print("Sample predictions:")
-    print(submission.head(10))
+    label_to_sirna = {v: k for k, v in sirna_to_label.items()}
+    predictions = [label_to_sirna[p] for p in predictions]
+    
+    submission = pd.DataFrame({'id_code': ids, 'sirna': predictions})
+    submission.to_csv('submission_vit.csv', index=False)
+    
+    print(f"\n✓ Complete! Best Val Acc: {best_acc:.2f}%")
+    print(f"Saved submission_vit.csv")
+
 
 if __name__ == '__main__':
     main()
