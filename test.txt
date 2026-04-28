@@ -1,0 +1,21 @@
+01_resnet50_baseline.py -> Tavish
+02_resnet50_single_site.py -> Nitish
+03_inceptionv3.py -> Aishani
+04_densenet121_no_aug.py -> Aishani
+05_densenet121.py -> Aishani
+06_efficientnet_b0.py -> Himanshu
+07_efficientnet_b4.py -> Tavish
+08_resnext50_32x4d.py -> Tavish
+09_vision_transformer.py -> Nitish
+10_convnextv2.py -> Nitish 
+11_chaotic_cnn.py -> Himanshu
+12_chaotic_cnn.py -> Nitish
+13_chaotic_cnn.py -> Himanshu 
+14_resnet50_baseline_with_controls.py  -> Aishani
+15_resnext50_with_controls.py -> Tavish
+16_resnet50_controls_msam.py -> Everyone
+
+Nitish <nnitish_be23@thapar.edu>
+aishani-s20 <aishani.code@gmail.com>
+Tavish Sood <tavish005sood@gmail.com>
+Himanshu Sardana <himanshusardana2005@gmail.com>

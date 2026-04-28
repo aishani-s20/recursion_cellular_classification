@@ -1,0 +1,78 @@
+============================================================
+EfficientNet-B4 Training Log
+============================================================
+
+Model: EfficientNet-B4
+Cell Types: All four (HEPG2, HUVEC, RPE, U2OS)
+Image Size: 320x320
+Batch Size: 32
+Optimizer: AdamW (lr=3e-4, weight_decay=1e-4)
+Scheduler: Cosine Annealing
+Epochs: 14 (Two-Phase: Frozen backbone 1 epoch + Full fine-tuning 13 epochs)
+Augmentation: None
+TTA: None
+
+------------------------------------------------------------
+Epoch 1 (Frozen)
+------------------------------------------------------------
+Train Loss: 7.0375
+Train Acc: 0.21%
+Val Loss: 6.7248
+Val Acc: 0.82%
+
+------------------------------------------------------------
+Epoch 2
+------------------------------------------------------------
+Train Loss: 6.5534
+Train Acc: 1.47%
+Val Loss: 6.1183
+Val Acc: 3.85%
+
+------------------------------------------------------------
+Epoch 3
+------------------------------------------------------------
+Train Loss: 5.8667
+Train Acc: 6.34%
+Val Loss: nan
+Val Acc: 6.93%
+
+------------------------------------------------------------
+Epoch 4
+------------------------------------------------------------
+Train Loss: 5.0988
+Train Acc: 15.56%
+Val Loss: 5.5418
+Val Acc: 10.04%
+
+------------------------------------------------------------
+Epoch 5
+------------------------------------------------------------
+Train Loss: 4.2990
+Train Acc: 29.13%
+Val Loss: 5.5827
+Val Acc: 10.83%
+
+------------------------------------------------------------
+Epoch 6
+------------------------------------------------------------
+Train Loss: 3.5100
+Train Acc: 45.89%
+Val Loss: 5.7409
+Val Acc: 10.63%
+
+------------------------------------------------------------
+Epoch 7
+------------------------------------------------------------
+Train Loss: 2.8412
+Train Acc: 62.30%
+Val Loss: 5.9402
+Val Acc: 10.08%
+
+============================================================
+Best Validation Accuracy: 10.83% (Epoch 5)
+============================================================
+
+Notes:
+- Validation loss became unstable (nan at epoch 3)
+- Severe overfitting observed
+- Training was terminated early due to poor performance

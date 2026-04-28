@@ -1,0 +1,122 @@
+Using device: cuda
+Loading data...
+Training samples: 17689
+Test samples: 8846
+Cell types in train: ['HUVEC']
+Number of unique sirnas: 1108
+Label range: 0 to 1107
+Creating model: resnet50...
+
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+
+Epoch 1/10
+
+Training: 100%|██████████| 470/470 [05:56<00:00,  1.32it/s, loss=6.94, acc=0.146] 
+Validation: 100%|██████████| 83/83 [00:46<00:00,  1.77it/s]
+
+Train Loss: 6.9417, Train Acc: 0.15%
+Val Loss: 6.7151, Val Acc: 0.41%
+Saved best model with accuracy: 0.41%
+
+Epoch 2/10
+
+Training: 100%|██████████| 470/470 [05:58<00:00,  1.31it/s, loss=6.18, acc=1.4]  
+Validation: 100%|██████████| 83/83 [00:46<00:00,  1.78it/s]
+
+Train Loss: 6.1782, Train Acc: 1.40%
+Val Loss: 5.3732, Val Acc: 5.01%
+Saved best model with accuracy: 5.01%
+
+Epoch 3/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.32it/s, loss=4.66, acc=11.5]
+Validation: 100%|██████████| 83/83 [00:46<00:00,  1.77it/s]
+
+Train Loss: 4.6563, Train Acc: 11.50%
+Val Loss: 4.3221, Val Acc: 14.73%
+Saved best model with accuracy: 14.73%
+
+Epoch 4/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.32it/s, loss=3.34, acc=29.9] 
+Validation: 100%|██████████| 83/83 [00:49<00:00,  1.66it/s]
+
+Train Loss: 3.3380, Train Acc: 29.94%
+Val Loss: 3.5857, Val Acc: 24.27%
+Saved best model with accuracy: 24.27%
+
+Epoch 5/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.32it/s, loss=2.43, acc=48.2] 
+Validation: 100%|██████████| 83/83 [00:47<00:00,  1.75it/s]
+
+Train Loss: 2.4297, Train Acc: 48.22%
+Val Loss: 3.2956, Val Acc: 30.33%
+Saved best model with accuracy: 30.33%
+
+Epoch 6/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.31it/s, loss=1.83, acc=61.9] 
+Validation: 100%|██████████| 83/83 [00:47<00:00,  1.76it/s]
+
+Train Loss: 1.8331, Train Acc: 61.93%
+Val Loss: 3.1245, Val Acc: 34.06%
+Saved best model with accuracy: 34.06%
+
+Epoch 7/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.31it/s, loss=1.44, acc=71.7] 
+Validation: 100%|██████████| 83/83 [00:45<00:00,  1.82it/s]
+
+Train Loss: 1.4440, Train Acc: 71.74%
+Val Loss: 3.0479, Val Acc: 35.27%
+Saved best model with accuracy: 35.27%
+
+Epoch 8/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.31it/s, loss=1.21, acc=78.3] 
+Validation: 100%|██████████| 83/83 [00:47<00:00,  1.76it/s]
+
+Train Loss: 1.2069, Train Acc: 78.32%
+Val Loss: 2.9688, Val Acc: 36.44%
+Saved best model with accuracy: 36.44%
+
+Epoch 9/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.31it/s, loss=1.06, acc=82]   
+Validation: 100%|██████████| 83/83 [00:48<00:00,  1.72it/s]
+
+Train Loss: 1.0592, Train Acc: 81.96%
+Val Loss: 2.9528, Val Acc: 37.26%
+Saved best model with accuracy: 37.26%
+
+Epoch 10/10
+
+Training: 100%|██████████| 470/470 [05:57<00:00,  1.31it/s, loss=0.994, acc=83.7]
+Validation: 100%|██████████| 83/83 [00:46<00:00,  1.78it/s]
+
+Train Loss: 0.9937, Train Acc: 83.66%
+Val Loss: 2.9565, Val Acc: 37.49%
+Saved best model with accuracy: 37.49%
+
+Loading best model for inference...
+Generating predictions...
+
+Inference: 100%|██████████| 277/277 [05:50<00:00,  1.26s/it]
+
+
+Submission saved to submission.csv
+Best validation accuracy: 37.49%
+Sample predictions:
+          id_code  sirna
+0  HUVEC-17_1_B03    912
+1  HUVEC-17_1_B04    277
+2  HUVEC-17_1_B05    746
+3  HUVEC-17_1_B06    119
+4  HUVEC-17_1_B07    830
+5  HUVEC-17_1_B08    158
+6  HUVEC-17_1_B09     79
+7  HUVEC-17_1_B10    480
+8  HUVEC-17_1_B11    292
+9  HUVEC-17_1_B12   1078

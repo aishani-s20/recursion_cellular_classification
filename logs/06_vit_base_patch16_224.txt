@@ -1,0 +1,51 @@
+Using device: cuda
+============================================================
+ViT-Base/16 - Optimized (With Augmentation + Mixed Precision)
+============================================================
+
+Loading data...
+Training samples: 17689
+Classes: 1108
+
+Creating vit_base_patch16_224...
+
+/tmp/ipykernel_55/2895436174.py:259: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = GradScaler()  # Mixed precision scaler
+
+
+Epoch 1/20
+
+Training:   0%|          | 0/470 [00:00<?, ?it/s]/tmp/ipykernel_55/2895436174.py:166: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+Training: 100%|██████████| 470/470 [04:41<00:00,  1.67it/s, loss=7.1742, acc=0.09%]
+Validation:   0%|          | 0/83 [00:00<?, ?it/s]/tmp/ipykernel_55/2895436174.py:200: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+Validation: 100%|██████████| 83/83 [00:50<00:00,  1.63it/s]
+
+Train: 7.1742, 0.09% | Val: 7.0832, 0.11%
+  → Saved best: 0.11%
+
+Epoch 2/20
+
+Training: 100%|██████████| 470/470 [04:43<00:00,  1.66it/s, loss=7.0888, acc=0.05%]
+Validation: 100%|██████████| 83/83 [00:49<00:00,  1.69it/s]
+
+Train: 7.0888, 0.05% | Val: 7.0719, 0.04%
+  → No improvement (1/3)
+
+Epoch 3/20
+
+Training: 100%|██████████| 470/470 [04:36<00:00,  1.70it/s, loss=7.0717, acc=0.05%]
+Validation: 100%|██████████| 83/83 [00:51<00:00,  1.61it/s]
+
+Train: 7.0717, 0.05% | Val: 7.0687, 0.04%
+  → No improvement (2/3)
+
+Epoch 4/20
+
+Training: 100%|██████████| 470/470 [04:51<00:00,  1.61it/s, loss=7.0590, acc=0.06%]
+Validation: 100%|██████████| 83/83 [00:48<00:00,  1.73it/s]
+
+Train: 7.0590, 0.06% | Val: 7.0645, 0.00%
+  → No improvement (3/3)
+Early stopping!
