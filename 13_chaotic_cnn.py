@@ -50,7 +50,7 @@ CELL_TYPES  = ['HUVEC']
 #   • 'skew_tent' tends to give the strongest gain on MNIST and CIFAR-10
 #   • 'logistic'  is most consistent on Fashion-MNIST style tasks
 #   • 'sine'      is smooth and stable across all settings
-CHAOTIC_MAP = 'skew_tent'
+CHAOTIC_MAP = 'sine'
 
 # ─── Seed ─────────────────────────────────────────────────────────────────────
 np.random.seed(SEED)

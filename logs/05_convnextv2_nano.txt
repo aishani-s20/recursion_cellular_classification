@@ -1,0 +1,39 @@
+Using device: cuda
+============================================================
+ConvNeXt V2 - Modern ConvNet (No Augmentation)
+============================================================
+
+Loading data...
+Training samples: 17689
+Test samples: 19897
+Cell types: ['HUVEC']
+Number of classes: 1108
+Train: 15035, Val: 2654
+
+Creating model: convnextv2_nano...
+Detected feature dimension: 640
+
+Epoch 1/10
+
+Training: 100%|██████████| 940/940 [07:37<00:00,  2.06it/s, loss=7.0601, acc=0.05%]
+Validation: 100%|██████████| 166/166 [01:15<00:00,  2.19it/s]
+
+Train Loss: 7.0601, Acc: 0.05%
+Val Loss: 7.0257, Acc: 0.11%
+Saved best model: 0.11%
+
+Epoch 2/10
+
+Training: 100%|██████████| 940/940 [07:10<00:00,  2.18it/s, loss=7.0322, acc=0.09%]
+Validation: 100%|██████████| 166/166 [01:15<00:00,  2.21it/s]
+
+Train Loss: 7.0322, Acc: 0.09%
+Val Loss: 7.0269, Acc: 0.08%
+
+Epoch 3/10
+
+Training: 100%|██████████| 940/940 [07:20<00:00,  2.13it/s, loss=7.0272, acc=0.03%]
+Validation: 100%|██████████| 166/166 [01:18<00:00,  2.10it/s]
+
+Train Loss: 7.0272, Acc: 0.03%
+Val Loss: 7.0232, Acc: 0.08%

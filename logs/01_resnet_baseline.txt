@@ -1,0 +1,120 @@
+Using device: cuda
+============================================================
+ResNet50 Baseline - No Augmentation
+============================================================
+
+Loading data...
+Training samples: 17689
+Test samples: 19897
+Cell types: ['HUVEC']
+Number of classes: 1108
+Train: 15035, Val: 2654
+
+Creating model: resnet50...
+
+Epoch 1/20
+
+Training: 100%|██████████| 470/470 [08:03<00:00,  1.03s/it, loss=6.9417, acc=0.15%]
+Validation: 100%|██████████| 83/83 [01:25<00:00,  1.03s/it]
+
+Train Loss: 6.9417, Acc: 0.15%
+Val Loss: 6.7151, Acc: 0.41%
+Saved best model: 0.41%
+
+Epoch 2/20
+
+Training: 100%|██████████| 470/470 [07:24<00:00,  1.06it/s, loss=6.1675, acc=1.48%]
+Validation: 100%|██████████| 83/83 [01:16<00:00,  1.09it/s]
+
+Train Loss: 6.1675, Acc: 1.48%
+Val Loss: 5.3929, Acc: 4.45%
+Saved best model: 4.45%
+
+Epoch 3/20
+
+Training: 100%|██████████| 470/470 [07:19<00:00,  1.07it/s, loss=4.6235, acc=11.52%]
+Validation: 100%|██████████| 83/83 [01:17<00:00,  1.07it/s]
+
+Train Loss: 4.6235, Acc: 11.52%
+Val Loss: 4.2424, Acc: 15.00%
+Saved best model: 15.00%
+
+Epoch 4/20
+
+Training: 100%|██████████| 470/470 [07:28<00:00,  1.05it/s, loss=3.2776, acc=30.41%]
+Validation: 100%|██████████| 83/83 [01:18<00:00,  1.06it/s]
+
+Train Loss: 3.2776, Acc: 30.41%
+Val Loss: 3.5054, Acc: 26.83%
+Saved best model: 26.83%
+
+Epoch 5/20
+
+Training: 100%|██████████| 470/470 [07:24<00:00,  1.06it/s, loss=2.3287, acc=48.88%]
+Validation: 100%|██████████| 83/83 [01:16<00:00,  1.08it/s]
+
+Train Loss: 2.3287, Acc: 48.88%
+Val Loss: 3.3017, Acc: 30.18%
+Saved best model: 30.18%
+
+Epoch 6/20
+
+Training: 100%|██████████| 470/470 [07:25<00:00,  1.06it/s, loss=1.6606, acc=64.31%]
+Validation: 100%|██████████| 83/83 [01:19<00:00,  1.05it/s]
+
+Train Loss: 1.6606, Acc: 64.31%
+Val Loss: 3.1569, Acc: 34.25%
+Saved best model: 34.25%
+
+Epoch 7/20
+
+Training: 100%|██████████| 470/470 [07:25<00:00,  1.05it/s, loss=1.1839, acc=75.44%]
+Validation: 100%|██████████| 83/83 [01:18<00:00,  1.06it/s]
+
+Train Loss: 1.1839, Acc: 75.44%
+Val Loss: 3.0905, Acc: 34.93%
+Saved best model: 34.93%
+
+Epoch 8/20
+
+Training: 100%|██████████| 470/470 [07:14<00:00,  1.08it/s, loss=0.8469, acc=83.84%]
+Validation: 100%|██████████| 83/83 [01:19<00:00,  1.04it/s]
+
+Train Loss: 0.8469, Acc: 83.84%
+Val Loss: 3.1443, Acc: 36.32%
+Saved best model: 36.32%
+
+Epoch 9/20
+
+Training: 100%|██████████| 470/470 [07:32<00:00,  1.04it/s, loss=0.5958, acc=89.41%]
+Validation: 100%|██████████| 83/83 [01:14<00:00,  1.11it/s]
+
+Train Loss: 0.5958, Acc: 89.41%
+Val Loss: 3.1267, Acc: 37.11%
+Saved best model: 37.11%
+
+Epoch 10/20
+
+Training: 100%|██████████| 470/470 [07:00<00:00,  1.12it/s, loss=0.4288, acc=92.91%]
+Validation: 100%|██████████| 83/83 [01:11<00:00,  1.16it/s]
+
+Train Loss: 0.4288, Acc: 92.91%
+Val Loss: 3.2282, Acc: 38.06%
+Saved best model: 38.06%
+
+Epoch 11/20
+
+Training: 100%|██████████| 470/470 [06:46<00:00,  1.16it/s, loss=0.3056, acc=95.35%]
+Validation: 100%|██████████| 83/83 [01:09<00:00,  1.20it/s]
+
+Train Loss: 0.3056, Acc: 95.35%
+Val Loss: 3.2887, Acc: 38.09%
+Saved best model: 38.09%
+
+Epoch 12/20
+
+Training: 100%|██████████| 470/470 [07:06<00:00,  1.10it/s, loss=0.2157, acc=97.08%]
+Validation: 100%|██████████| 83/83 [01:16<00:00,  1.08it/s]
+
+Train Loss: 0.2157, Acc: 97.08%
+Val Loss: 3.3589, Acc: 36.93%

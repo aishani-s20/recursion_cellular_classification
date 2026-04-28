@@ -1,0 +1,361 @@
+Efficientnet b4 (no aug no tta)
+Using device: cuda
+Loading CSVs...
+Classes: 1108  |  Train wells: 36517  |  Test wells: 19899
+Train exps: 29  |  Val exps: 4  (32103 / 4414 wells)
+Building pixel-stats lookup...
+Building efficientnet_b4...
+
+Phase 1 — backbone frozen for 1 epoch(s)
+
+Epoch 1/14  lr=0.00e+00
+                                                                                  
+  Train  loss=7.0375  acc=0.21%
+  Val    loss=6.7248  acc=0.82%
+  ✓ Saved best model (val acc=0.82%)
+
+Phase 2 — full fine-tune from epoch 2
+
+Epoch 2/14  lr=3.00e-04
+                                                                                  
+  Train  loss=6.5534  acc=1.47%
+  Val    loss=6.1183  acc=3.85%
+  ✓ Saved best model (val acc=3.85%)
+
+Epoch 3/14  lr=2.96e-04
+                                                                                  
+  Train  loss=5.8667  acc=6.34%
+  Val    loss=nan  acc=6.93%
+  ✓ Saved best model (val acc=6.93%)
+
+Epoch 4/14  lr=2.83e-04
+                                                                                   
+  Train  loss=5.0988  acc=15.56%
+  Val    loss=5.5418  acc=10.04%
+  ✓ Saved best model (val acc=10.04%)
+
+Epoch 5/14  lr=2.62e-04
+                                                                                   
+  Train  loss=4.2990  acc=29.13%
+  Val    loss=5.5827  acc=10.83%
+  ✓ Saved best model (val acc=10.83%)
+
+Epoch 6/14  lr=2.35e-04
+                                                                                   
+  Train  loss=3.5100  acc=45.89%
+  Val    loss=5.7409  acc=10.63%
+
+Epoch 7/14  lr=2.03e-04
+                                                                                   
+  Train  loss=2.8412  acc=62.30%
+  Val    loss=5.9402  acc=10.08%
+
+
+INCEPTION V3
+Using device: cuda
+============================================================
+Google Inception V3 — TTA Upgraded
+============================================================
+
+Loading CSVs...
+Building pixel-stats lookup...
+
+Building inception_v3...
+
+Phase 1 — backbone frozen for 1 epoch(s)
+
+Epoch 1/10  lr=0.00e+00
+                                                                                  
+  Train  loss=7.0471  acc=0.16%
+  Val    loss=6.8068  acc=0.72%
+  ✓ Saved best model (val acc=0.72%)
+
+Phase 2 — full fine-tune from epoch 2
+
+Epoch 2/10  lr=3.00e-04
+                                                                                  
+  Train  loss=6.8515  acc=0.31%
+  Val    loss=7.1554  acc=1.16%
+  ✓ Saved best model (val acc=1.16%)
+
+Epoch 3/10  lr=2.91e-04
+                                                                                  
+  Train  loss=6.5686  acc=0.83%
+  Val    loss=6.5015  acc=1.40%
+  ✓ Saved best model (val acc=1.40%)
+
+Epoch 4/10  lr=2.65e-04
+                                                                                  
+  Train  loss=6.3339  acc=1.52%
+  Val    loss=7.2565  acc=2.20%
+  ✓ Saved best model (val acc=2.20%)
+
+Epoch 5/10  lr=2.25e-04
+                                                                                  
+  Train  loss=6.1303  acc=2.69%
+  Val    loss=6.3189  acc=3.53%
+  ✓ Saved best model (val acc=3.53%)
+
+Epoch 6/10  lr=1.76e-04
+                                                                                  
+  Train  loss=5.9130  acc=4.11%
+  Val    loss=5.6685  acc=6.80%
+  ✓ Saved best model (val acc=6.80%)
+
+Epoch 7/10  lr=1.24e-04
+                                                                                  
+  Train  loss=5.7124  acc=6.03%
+  Val    loss=5.6866  acc=8.52%
+  ✓ Saved best model (val acc=8.52%)
+
+Epoch 8/10  lr=7.50e-05
+                                                                                  
+  Train  loss=5.5515  acc=7.90%
+  Val    loss=5.5133  acc=9.79%
+  ✓ Saved best model (val acc=9.79%)
+
+Epoch 9/10  lr=3.51e-05
+                                                                                  
+  Train  loss=5.4378  acc=9.08%
+  Val    loss=5.5648  acc=9.81%
+  ✓ Saved best model (val acc=9.81%)
+
+Epoch 10/10  lr=9.05e-06
+                                                                                   
+  Train  loss=5.3892  acc=10.07%
+  Val    loss=6.0558  acc=8.27%
+
+Loading best weights (val acc=9.81%)...
+Running TTA inference...
+                                                                 
+
+✓ Done. Best val acc: 9.81%
+Saved submission_inceptionv3.csv
+          id_code  sirna
+0  HEPG2-08_1_B03    187
+1  HEPG2-08_1_B04    338
+2  HEPG2-08_1_B05    565
+3  HEPG2-08_1_B06    612
+4  HEPG2-08_1_B07    352
+
+
+convnext tiny
+
+Using device: cuda
+Loading CSVs...
+Classes : 1108
+Train wells: 36517 | Test wells: 19899
+Train exps: 29 (32103 wells) | Val exps: 4 (4414 wells)
+Building pixel-stats lookup...
+
+Building convnextv2_tiny...
+Feature dimension: 768
+
+Phase 1 — backbone frozen for 1 epoch(s)
+
+Epoch 1/20  lr=0.00e+00
+                                                                                  
+  Train  loss=6.9913  acc=0.21%
+  Val    loss=6.6528  acc=1.04%
+  ✓ Saved best model (val acc=1.04%)
+
+Phase 2 — full fine-tune (epoch 2)
+
+Epoch 2/20  lr=3.00e-04
+                                                                                  
+  Train  loss=6.8814  acc=0.17%
+  Val    loss=25.8076  acc=0.09%
+  No improvement — patience 1/5
+
+Epoch 3/20  lr=2.98e-04
+                                                                                  
+  Train  loss=6.7558  acc=0.31%
+  Val    loss=16.1042  acc=0.11%
+  No improvement — patience 2/5
+
+Epoch 4/20  lr=2.92e-04
+                                                                                  
+  Train  loss=6.6470  acc=0.41%
+  Val    loss=11.8655  acc=0.20%
+  No improvement — patience 3/5
+
+Epoch 5/20  lr=2.82e-04
+                                                                                  
+  Train  loss=6.5632  acc=0.55%
+  Val    loss=21.9518  acc=0.11%
+  No improvement — patience 4/5
+
+Epoch 6/20  lr=2.68e-04
+                                                                                  
+  Train  loss=6.4848  acc=0.77%
+  Val    loss=10.9303  acc=0.39%
+  No improvement — patience 5/5
+Early stopping at epoch 6
+
+Loading best weights (val acc=1.04%)...
+Running TTA inference (6 passes)...
+                                                                
+
+Done. submission_convnextv2.csv saved | Best val acc: 1.04%
+          id_code  sirna
+0  HEPG2-08_1_B03    165
+1  HEPG2-08_1_B04     49
+2  HEPG2-08_1_B05    328
+3  HEPG2-08_1_B06    754
+4  HEPG2-08_1_B07    165
+
+Densenet with aug
+
+Using device: cuda
+============================================================
+DenseNet121 — Augmentation + TTA
+============================================================
+
+Loading data...
+Classes      : 1108
+Train wells  : 36517
+Test wells   : 19899
+Train exps   : 29  (32103 wells)
+Val exps     : 4  (4414 wells)
+Building pixel-stats lookup...
+
+Creating densenet121...
+model.safetensors: 100%
+ 32.3M/32.3M [00:01<00:00, 106MB/s]
+
+Phase 1 — backbone frozen for 1 epoch(s)
+
+Epoch 1/20  lr=0.00e+00
+                                                                                  
+  Train  loss=7.0167  acc=0.16%
+  Val    loss=6.7316  acc=0.86%
+  ✓ Saved best model (val acc=0.86%)
+
+Phase 2 — full fine-tune from epoch 2
+
+Epoch 2/20  lr=3.00e-04
+                                                                                  
+  Train  loss=6.6803  acc=0.76%
+  Val    loss=6.3504  acc=1.95%
+  ✓ Saved best model (val acc=1.95%)
+
+Epoch 3/20  lr=2.98e-04
+                                                                                  
+  Train  loss=6.2441  acc=2.65%
+  Val    loss=5.8501  acc=5.37%
+  ✓ Saved best model (val acc=5.37%)
+
+Epoch 4/20  lr=2.92e-04
+                                                                                  
+  Train  loss=5.8060  acc=6.13%
+  Val    loss=5.4522  acc=9.38%
+  ✓ Saved best model (val acc=9.38%)
+
+Epoch 5/20  lr=2.82e-04
+                                                                                   
+  Train  loss=5.4203  acc=10.43%
+  Val    loss=4.9985  acc=15.79%
+  ✓ Saved best model (val acc=15.79%)
+
+Epoch 6/20  lr=2.68e-04
+                                                                                   
+  Train  loss=5.1210  acc=14.87%
+  Val    loss=4.7622  acc=20.41%
+  ✓ Saved best model (val acc=20.41%)
+
+Epoch 7/20  lr=2.52e-04
+                                                                                   
+  Train  loss=4.8672  acc=19.00%
+  Val    loss=4.5965  acc=22.32%
+  ✓ Saved best model (val acc=22.32%)
+
+Epoch 8/20  lr=2.32e-04
+                                                                                   
+  Train  loss=4.6387  acc=22.76%
+  Val    loss=4.3184  acc=27.12%
+  ✓ Saved best model (val acc=27.12%)
+
+Epoch 9/20  lr=2.10e-04
+                                                                                   
+  Train  loss=4.4313  acc=26.66%
+  Val    loss=4.1164  acc=31.90%
+  ✓ Saved best model (val acc=31.90%)
+
+Epoch 10/20  lr=1.87e-04
+                                                                                   
+  Train  loss=4.2441  acc=30.27%
+  Val    loss=3.9788  acc=34.84%
+  ✓ Saved best model (val acc=34.84%)
+
+Epoch 11/20  lr=1.62e-04
+                                                                                   
+  Train  loss=4.0835  acc=33.72%
+  Val    loss=3.8590  acc=37.56%
+  ✓ Saved best model (val acc=37.56%)
+
+Epoch 12/20  lr=1.38e-04
+                                                                                   
+  Train  loss=3.9349  acc=36.55%
+  Val    loss=3.7567  acc=39.78%
+  ✓ Saved best model (val acc=39.78%)
+
+Epoch 13/20  lr=1.13e-04
+                                                                                   
+  Train  loss=3.8072  acc=39.36%
+  Val    loss=3.6743  acc=41.12%
+  ✓ Saved best model (val acc=41.12%)
+
+Epoch 14/20  lr=8.97e-05
+                                                                                   
+  Train  loss=3.7031  acc=41.77%
+  Val    loss=3.6075  acc=42.66%
+  ✓ Saved best model (val acc=42.66%)
+
+Epoch 15/20  lr=6.80e-05
+                                                                                   
+  Train  loss=3.6009  acc=43.91%
+  Val    loss=3.5349  acc=44.72%
+  ✓ Saved best model (val acc=44.72%)
+
+Epoch 16/20  lr=4.84e-05
+                                                                                   
+  Train  loss=3.5162  acc=45.96%
+  Val    loss=3.4949  acc=46.17%
+  ✓ Saved best model (val acc=46.17%)
+
+Epoch 17/20  lr=3.16e-05
+                                                                                   
+  Train  loss=3.4648  acc=47.26%
+  Val    loss=3.4411  acc=47.42%
+  ✓ Saved best model (val acc=47.42%)
+
+Epoch 18/20  lr=1.81e-05
+                                                                                   
+  Train  loss=3.4218  acc=48.38%
+  Val    loss=3.4562  acc=46.81%
+  No improvement (1/5)
+
+Epoch 19/20  lr=8.13e-06
+                                                                                   
+  Train  loss=3.4080  acc=48.62%
+  Val    loss=3.4728  acc=46.62%
+  No improvement (2/5)
+
+Epoch 20/20  lr=2.05e-06
+                                                                                   
+  Train  loss=3.3847  acc=49.39%
+  Val    loss=3.4377  acc=47.26%
+  No improvement (3/5)
+
+Loading best weights (val acc=47.42%)...
+Running TTA inference...
+                                                                 
+
+✓ Done. Best val acc: 47.42%
+Saved submission_densenet121.csv
+          id_code  sirna
+0  HEPG2-08_1_B03    713
+1  HEPG2-08_1_B04    802
+2  HEPG2-08_1_B05    911
+3  HEPG2-08_1_B06    936
+4  HEPG2-08_1_B07     57

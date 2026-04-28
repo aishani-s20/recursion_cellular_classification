@@ -1,0 +1,172 @@
+Using device: cuda
+=================================================================
+DenseNet121 + Chaotic CNN  [sine map]
+=================================================================
+
+Loading data...
+Training samples: 17689
+Classes: 1108
+
+Creating ChaoticDenseNet121 [sine]...
+
+Epoch 1/20
+
+Training: 100%|██████████| 470/470 [05:10<00:00,  1.52it/s, loss=6.9896, acc=0.15%]
+Val: 100%|██████████| 83/83 [00:49<00:00,  1.69it/s]
+
+Train: loss=6.9896  acc=0.15%  |  Val: loss=6.7119  acc=0.34%
+  → Saved best model: 0.34%
+
+Epoch 2/20
+
+Training: 100%|██████████| 470/470 [05:10<00:00,  1.52it/s, loss=6.4316, acc=0.73%]
+Val: 100%|██████████| 83/83 [00:50<00:00,  1.65it/s]
+
+Train: loss=6.4316  acc=0.73%  |  Val: loss=6.0738  acc=2.71%
+  → Saved best model: 2.71%
+
+Epoch 3/20
+
+Training: 100%|██████████| 470/470 [05:09<00:00,  1.52it/s, loss=5.6728, acc=4.16%]
+Val: 100%|██████████| 83/83 [00:50<00:00,  1.64it/s]
+
+Train: loss=5.6728  acc=4.16%  |  Val: loss=5.3186  acc=7.57%
+  → Saved best model: 7.57%
+
+Epoch 4/20
+
+Training: 100%|██████████| 470/470 [05:10<00:00,  1.51it/s, loss=4.8648, acc=11.07%]
+Val: 100%|██████████| 83/83 [00:50<00:00,  1.64it/s]
+
+Train: loss=4.8648  acc=11.07%  |  Val: loss=4.8792  acc=10.36%
+  → Saved best model: 10.36%
+
+Epoch 5/20
+
+Training: 100%|██████████| 470/470 [05:10<00:00,  1.52it/s, loss=4.1446, acc=21.39%]
+Val: 100%|██████████| 83/83 [00:50<00:00,  1.64it/s]
+
+Train: loss=4.1446  acc=21.39%  |  Val: loss=4.2816  acc=17.97%
+  → Saved best model: 17.97%
+
+Epoch 6/20
+
+Training: 100%|██████████| 470/470 [05:09<00:00,  1.52it/s, loss=3.5054, acc=32.43%]
+Val: 100%|██████████| 83/83 [00:49<00:00,  1.67it/s]
+
+Train: loss=3.5054  acc=32.43%  |  Val: loss=4.0361  acc=21.89%
+  → Saved best model: 21.89%
+
+Epoch 7/20
+
+Training: 100%|██████████| 470/470 [05:10<00:00,  1.51it/s, loss=2.9111, acc=45.67%]
+Val: 100%|██████████| 83/83 [00:51<00:00,  1.61it/s]
+
+Train: loss=2.9111  acc=45.67%  |  Val: loss=3.7019  acc=25.47%
+  → Saved best model: 25.47%
+
+Epoch 8/20
+
+Training: 100%|██████████| 470/470 [05:11<00:00,  1.51it/s, loss=2.3345, acc=60.31%]
+Val: 100%|██████████| 83/83 [00:51<00:00,  1.60it/s]
+
+Train: loss=2.3345  acc=60.31%  |  Val: loss=3.5687  acc=28.22%
+  → Saved best model: 28.22%
+
+Epoch 9/20
+
+Training: 100%|██████████| 470/470 [05:15<00:00,  1.49it/s, loss=1.7819, acc=73.89%]
+Val: 100%|██████████| 83/83 [00:53<00:00,  1.55it/s]
+
+Train: loss=1.7819  acc=73.89%  |  Val: loss=3.4274  acc=31.09%
+  → Saved best model: 31.09%
+
+Epoch 10/20
+
+Training: 100%|██████████| 470/470 [05:12<00:00,  1.50it/s, loss=1.3347, acc=84.28%]
+Val: 100%|██████████| 83/83 [00:52<00:00,  1.58it/s]
+
+Train: loss=1.3347  acc=84.28%  |  Val: loss=3.3930  acc=32.74%
+  → Saved best model: 32.74%
+
+Epoch 11/20
+
+Training: 100%|██████████| 470/470 [05:15<00:00,  1.49it/s, loss=0.9477, acc=91.85%]
+Val: 100%|██████████| 83/83 [00:53<00:00,  1.55it/s]
+
+Train: loss=0.9477  acc=91.85%  |  Val: loss=3.3316  acc=32.18%
+  → No improvement (1/3)
+
+Epoch 12/20
+
+Training: 100%|██████████| 470/470 [05:16<00:00,  1.48it/s, loss=0.6780, acc=96.28%]
+Val: 100%|██████████| 83/83 [00:53<00:00,  1.55it/s]
+
+Train: loss=0.6780  acc=96.28%  |  Val: loss=3.3743  acc=32.22%
+  → No improvement (2/3)
+
+Epoch 13/20
+
+Training: 100%|██████████| 470/470 [05:16<00:00,  1.49it/s, loss=0.4804, acc=98.55%]
+Val: 100%|██████████| 83/83 [00:54<00:00,  1.54it/s]
+
+Train: loss=0.4804  acc=98.55%  |  Val: loss=3.3372  acc=33.01%
+  → Saved best model: 33.01%
+
+Epoch 14/20
+
+Training: 100%|██████████| 470/470 [05:12<00:00,  1.50it/s, loss=0.3609, acc=99.60%]
+Val: 100%|██████████| 83/83 [00:54<00:00,  1.53it/s]
+
+Train: loss=0.3609  acc=99.60%  |  Val: loss=3.3120  acc=33.12%
+  → Saved best model: 33.12%
+
+Epoch 15/20
+
+Training: 100%|██████████| 470/470 [05:13<00:00,  1.50it/s, loss=0.2782, acc=99.71%]
+Val: 100%|██████████| 83/83 [00:54<00:00,  1.53it/s]
+
+Train: loss=0.2782  acc=99.71%  |  Val: loss=3.3181  acc=32.74%
+  → No improvement (1/3)
+
+Epoch 16/20
+
+Training: 100%|██████████| 470/470 [05:18<00:00,  1.48it/s, loss=0.2266, acc=99.95%]
+Val: 100%|██████████| 83/83 [00:52<00:00,  1.58it/s]
+
+Train: loss=0.2266  acc=99.95%  |  Val: loss=3.3146  acc=33.53%
+  → Saved best model: 33.53%
+
+Epoch 17/20
+
+Training: 100%|██████████| 470/470 [05:11<00:00,  1.51it/s, loss=0.1930, acc=99.93%]
+Val: 100%|██████████| 83/83 [00:52<00:00,  1.58it/s]
+
+Train: loss=0.1930  acc=99.93%  |  Val: loss=3.3173  acc=33.72%
+  → Saved best model: 33.72%
+
+Epoch 18/20
+
+Training: 100%|██████████| 470/470 [05:17<00:00,  1.48it/s, loss=0.1740, acc=99.96%]
+Val: 100%|██████████| 83/83 [00:53<00:00,  1.55it/s]
+
+Train: loss=0.1740  acc=99.96%  |  Val: loss=3.3082  acc=33.27%
+  → No improvement (1/3)
+
+Epoch 19/20
+
+Training: 100%|██████████| 470/470 [05:19<00:00,  1.47it/s, loss=0.1619, acc=99.95%] 
+Val: 100%|██████████| 83/83 [00:53<00:00,  1.54it/s]
+
+Train: loss=0.1619  acc=99.95%  |  Val: loss=3.3094  acc=33.35%
+  → No improvement (2/3)
+
+Epoch 20/20
+
+Training: 100%|██████████| 470/470 [05:17<00:00,  1.48it/s, loss=0.1558, acc=99.97%]
+Val: 100%|██████████| 83/83 [00:54<00:00,  1.52it/s]
+
+Train: loss=0.1558  acc=99.97%  |  Val: loss=3.3082  acc=33.42%
+  → No improvement (3/3)
+Early stopping!
+

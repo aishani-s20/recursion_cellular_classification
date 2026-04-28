@@ -1,0 +1,107 @@
+Using device: cuda
+Loading data...
+Training samples: 36517
+Test samples: 19897
+Cell types in train: ['HEPG2' 'HUVEC' 'RPE' 'U2OS']
+Number of classes: 1108
+Creating model: efficientnet_b0...
+
+Epoch 1/10
+
+Training: 100%|██████████| 970/970 [15:24<00:00,  1.05it/s, loss=6.66, acc=1.18]  
+Validation: 100%|██████████| 172/172 [02:36<00:00,  1.10it/s]
+
+Train Loss: 6.6601, Acc: 1.18%
+Val Loss: 6.0470, Acc: 3.98%
+Saved best model: 3.98%
+
+Epoch 2/10
+
+Training: 100%|██████████| 970/970 [16:03<00:00,  1.01it/s, loss=5.66, acc=7.46] 
+Validation: 100%|██████████| 172/172 [02:20<00:00,  1.22it/s]
+
+Train Loss: 5.6555, Acc: 7.46%
+Val Loss: 5.2280, Acc: 13.25%
+Saved best model: 13.25%
+
+Epoch 3/10
+
+Training: 100%|██████████| 970/970 [15:25<00:00,  1.05it/s, loss=4.91, acc=17.1] 
+Validation: 100%|██████████| 172/172 [02:19<00:00,  1.24it/s]
+
+Train Loss: 4.9103, Acc: 17.14%
+Val Loss: 4.6951, Acc: 21.23%
+Saved best model: 21.23%
+
+Epoch 4/10
+
+Training: 100%|██████████| 970/970 [15:18<00:00,  1.06it/s, loss=4.35, acc=26.2] 
+Validation: 100%|██████████| 172/172 [02:17<00:00,  1.25it/s]
+
+Train Loss: 4.3488, Acc: 26.18%
+Val Loss: 4.3486, Acc: 28.20%
+Saved best model: 28.20%
+
+Epoch 5/10
+
+Training: 100%|██████████| 970/970 [14:55<00:00,  1.08it/s, loss=3.93, acc=34.6] 
+Validation: 100%|██████████| 172/172 [02:15<00:00,  1.27it/s]
+
+Train Loss: 3.9275, Acc: 34.60%
+Val Loss: 4.0928, Acc: 32.18%
+Saved best model: 32.18%
+
+Epoch 6/10
+
+Training: 100%|██████████| 970/970 [14:39<00:00,  1.10it/s, loss=3.59, acc=41.9] 
+Validation: 100%|██████████| 172/172 [02:24<00:00,  1.19it/s]
+
+Train Loss: 3.5940, Acc: 41.91%
+Val Loss: 3.8343, Acc: 37.73%
+Saved best model: 37.73%
+
+Epoch 7/10
+
+Training: 100%|██████████| 970/970 [14:39<00:00,  1.10it/s, loss=3.33, acc=48.4] 
+Validation: 100%|██████████| 172/172 [02:14<00:00,  1.28it/s]
+
+Train Loss: 3.3287, Acc: 48.39%
+Val Loss: 3.6166, Acc: 42.42%
+Saved best model: 42.42%
+
+Epoch 8/10
+
+Training: 100%|██████████| 970/970 [14:31<00:00,  1.11it/s, loss=3.15, acc=52.8] 
+Validation: 100%|██████████| 172/172 [02:22<00:00,  1.21it/s]
+
+Train Loss: 3.1454, Acc: 52.75%
+Val Loss: 3.5372, Acc: 44.36%
+Saved best model: 44.36%
+
+Epoch 9/10
+
+Training: 100%|██████████| 970/970 [14:16<00:00,  1.13it/s, loss=3, acc=56.5]    
+Validation: 100%|██████████| 172/172 [02:26<00:00,  1.18it/s]
+
+Train Loss: 3.0048, Acc: 56.55%
+Val Loss: 3.5236, Acc: 44.23%
+
+Epoch 10/10
+
+Training: 100%|██████████| 970/970 [20:21<00:00,  1.26s/it, loss=2.94, acc=57.9] 
+Validation: 100%|██████████| 172/172 [02:15<00:00,  1.27it/s]
+
+Train Loss: 2.9406, Acc: 57.88%
+Val Loss: 3.4870, Acc: 44.85%
+Saved best model: 44.85%
+
+Inference with TTA (dual site + fl)...
+
+Site1 : 100%|██████████| 622/622 [15:42<00:00,  1.51s/it]
+Site1 h: 100%|██████████| 622/622 [08:04<00:00,  1.28it/s]
+Site1 v: 100%|██████████| 622/622 [06:58<00:00,  1.49it/s]
+Site2 : 100%|██████████| 622/622 [15:32<00:00,  1.50s/it]
+Site2 h: 100%|██████████| 622/622 [07:19<00:00,  1.41it/s]
+Site2 v: 100%|██████████| 622/622 [06:56<00:00,  1.49it/s]
+
+Saved submission_efficientnet_b0.csv | Best val acc: 44.85%
