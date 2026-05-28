@@ -76,3 +76,4 @@ Notes:
 - Validation loss became unstable (nan at epoch 3)
 - Severe overfitting observed
 - Training was terminated early due to poor performance
+

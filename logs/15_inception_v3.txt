@@ -100,3 +100,4 @@ Notes:
 - Model showed slow but steady improvement before overfitting at epoch 10
 - TTA was applied for final submission
 - Training terminated after epoch 10 due to overfitting
+

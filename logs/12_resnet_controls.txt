@@ -1,0 +1,207 @@
+Using device: cuda
+============================================================
+ResNet50 with Controls and Plate Normalization
+============================================================
+
+Loading data...
+  train_controls.csv: 4097 rows
+  test_controls.csv: 2246 rows
+
+Training samples: 17689
+Test samples: 19899
+Cell types: ['HUVEC']
+Number of classes: 1108
+
+--- Adding control wells as extra training data ---
+  Found 4097 negative control wells
+  Adding 4097 control samples to training
+  New training size: 21786
+
+--- Computing plate control statistics ---
+Computing plate control stats from train_controls.csv ...
+Plate stats: 100%|██████████| 132/132 [04:55<00:00,  2.24s/it]
+  Computed stats for 132 plates
+Computing plate control stats from test_controls.csv ...
+Plate stats: 100%|██████████| 72/72 [02:37<00:00,  2.19s/it]
+  Computed stats for 72 plates
+
+Train: 19132, Val: 2654
+
+Building pixel-stats lookup...
+
+Creating model: resnet50...
+Loading widget...
+
+Phase 1 - backbone frozen for 1 epoch(s)
+
+Epoch 1/30  lr=0.00e+00
+                                                                                
+Train Loss: 7.0579, Acc: 0.11%
+Val Loss: 6.7665, Acc: 0.72%
+Saved best model: 0.72%
+
+Phase 2 - full fine-tune from epoch 2
+
+Epoch 2/30  lr=3.00e-04
+                                                                                
+Train Loss: 6.7289, Acc: 0.75%
+Val Loss: 6.3278, Acc: 2.45%
+Saved best model: 2.45%
+
+Epoch 3/30  lr=3.00e-04
+                                                                                
+Train Loss: 6.3978, Acc: 2.48%
+Val Loss: 5.9188, Acc: 6.10%
+Saved best model: 6.10%
+
+Epoch 4/30  lr=2.99e-04
+                                                                                
+Train Loss: 6.0205, Acc: 5.50%
+Val Loss: 5.3642, Acc: 11.30%
+Saved best model: 11.30%
+
+Epoch 5/30  lr=2.97e-04
+                                                                                
+Train Loss: 5.6680, Acc: 9.69%
+Val Loss: 4.9813, Acc: 17.03%
+Saved best model: 17.03%
+
+Epoch 6/30  lr=2.95e-04
+                                                                                 
+Train Loss: 5.3786, Acc: 13.46%
+Val Loss: 4.6711, Acc: 22.16%
+Saved best model: 22.16%
+
+Epoch 7/30  lr=2.92e-04
+                                                                                 
+Train Loss: 5.0906, Acc: 18.61%
+Val Loss: 4.4648, Acc: 25.24%
+Saved best model: 25.24%
+
+Epoch 8/30  lr=2.89e-04
+                                                                                 
+Train Loss: 4.8444, Acc: 22.88%
+Val Loss: 4.2996, Acc: 28.15%
+Saved best model: 28.15%
+
+Epoch 9/30  lr=2.85e-04
+                                                                                 
+Train Loss: 4.6295, Acc: 27.00%
+Val Loss: 4.0398, Acc: 34.10%
+Saved best model: 34.10%
+
+Epoch 10/30  lr=2.81e-04
+                                                                                 
+Train Loss: 4.4273, Acc: 30.77%
+Val Loss: 4.2869, Acc: 29.62%
+
+Epoch 11/30  lr=2.76e-04
+                                                                                 
+Train Loss: 4.2556, Acc: 34.42%
+Val Loss: 4.5679, Acc: 24.68%
+
+Epoch 12/30  lr=2.70e-04
+                                                                                 
+Train Loss: 4.1038, Acc: 37.99%
+Val Loss: 3.7456, Acc: 41.94%
+Saved best model: 41.94%
+
+Epoch 13/30  lr=2.64e-04
+                                                                                 
+Train Loss: 3.9680, Acc: 40.25%
+Val Loss: 3.6366, Acc: 43.90%
+Saved best model: 43.90%
+
+Epoch 14/30  lr=2.58e-04
+                                                                                 
+Train Loss: 3.8533, Acc: 42.78%
+Val Loss: 3.7241, Acc: 41.79%
+
+Epoch 15/30  lr=2.51e-04
+                                                                                 
+Train Loss: 3.7294, Acc: 45.14%
+Val Loss: 3.4490, Acc: 48.34%
+Saved best model: 48.34%
+
+Epoch 16/30  lr=2.44e-04
+                                                                                 
+Train Loss: 3.6323, Acc: 46.81%
+Val Loss: 3.5086, Acc: 47.06%
+
+Epoch 17/30  lr=2.36e-04
+                                                                                 
+Train Loss: 3.5164, Acc: 49.43%
+Val Loss: 3.4548, Acc: 49.06%
+Saved best model: 49.06%
+
+Epoch 18/30  lr=2.28e-04
+                                                                                 
+Train Loss: 3.4400, Acc: 50.91%
+Val Loss: 3.4318, Acc: 49.70%
+Saved best model: 49.70%
+
+Epoch 19/30  lr=2.19e-04
+                                                                                 
+Train Loss: 3.3451, Acc: 53.22%
+Val Loss: 3.4999, Acc: 48.49%
+
+Epoch 20/30  lr=2.11e-04
+                                                                                 
+Train Loss: 3.2762, Acc: 54.16%
+Val Loss: 3.2864, Acc: 53.28%
+Saved best model: 53.28%
+
+Epoch 21/30  lr=2.02e-04
+                                                                                 
+Train Loss: 3.1912, Acc: 55.70%
+Val Loss: 3.3282, Acc: 52.37%
+
+Epoch 22/30  lr=1.93e-04
+                                                                                 
+Train Loss: 3.1226, Acc: 57.20%
+Val Loss: 3.2334, Acc: 54.71%
+Saved best model: 54.71%
+
+Epoch 23/30  lr=1.83e-04
+                                                                                 
+Train Loss: 3.0448, Acc: 58.84%
+Val Loss: 3.1589, Acc: 54.94%
+Saved best model: 54.94%
+
+Epoch 24/30  lr=1.74e-04
+                                                                                 
+Train Loss: 2.9742, Acc: 60.18%
+Val Loss: 3.1824, Acc: 55.50%
+Saved best model: 55.50%
+
+Epoch 25/30  lr=1.64e-04
+                                                                                 
+Train Loss: 2.9166, Acc: 61.45%
+Val Loss: 3.1863, Acc: 55.92%
+Saved best model: 55.92%
+
+Epoch 26/30  lr=1.55e-04
+                                                                                 
+Train Loss: 2.8717, Acc: 62.38%
+Val Loss: 3.2076, Acc: 55.12%
+
+Epoch 27/30  lr=1.45e-04
+                                                                                 
+Train Loss: 2.8094, Acc: 64.10%
+Val Loss: 3.2262, Acc: 54.82%
+
+Epoch 28/30  lr=1.36e-04
+                                                                                 
+Train Loss: 2.7467, Acc: 65.24%
+Val Loss: 3.1090, Acc: 57.91%
+Saved best model: 57.91%
+
+Epoch 29/30  lr=1.26e-04
+                                                                                 
+Train Loss: 2.7036, Acc: 66.10%
+Val Loss: 3.1574, Acc: 56.33%
+
+Epoch 30/30  lr=1.17e-04
+                                                                                 
+Train Loss: 2.6681, Acc: 67.23%
+Val Loss: 3.1095, Acc: 57.72%
