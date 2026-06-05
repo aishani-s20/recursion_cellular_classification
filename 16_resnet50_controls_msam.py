@@ -19,6 +19,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.cuda.amp import autocast, GradScaler
 import timm
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, accuracy_score
 from tqdm import tqdm
 import cv2
 import warnings
@@ -197,6 +198,20 @@ def _adamw_msam_step(
     # This effectively does: p_{t+1} = p_{t+1} - rho * v_{t+1} / ||v_{t+1}||
     for i, param in enumerate(params):
         param.sub_(exp_avgs[i], alpha=norm_factor[0])
+
+
+# =============================================================================
+# METRICS
+# =============================================================================
+
+def compute_metrics(all_labels, all_preds, all_probs):
+    """Compute multi-class classification metrics."""
+    acc = accuracy_score(all_labels, all_preds)
+    auc = roc_auc_score(all_labels, all_probs, multi_class='ovr', average='macro')
+    f1 = f1_score(all_labels, all_preds, average='macro')
+    prec = precision_score(all_labels, all_preds, average='macro')
+    rec = recall_score(all_labels, all_preds, average='macro')
+    return acc, auc, f1, prec, rec
 
 
 # =============================================================================
@@ -488,7 +503,8 @@ def train_epoch(model, loader, criterion, optimizer, scheduler, scaler, device):
 
 def validate(model, loader, criterion, device):
     model.eval()
-    total_loss = correct = total = 0
+    total_loss = 0
+    all_labels, all_preds, all_probs = [], [], []
     
     with torch.no_grad():
         for imgs, labels in tqdm(loader, desc='Val  ', leave=False):
@@ -497,11 +513,23 @@ def validate(model, loader, criterion, device):
                 out = model(imgs)
                 loss = criterion(out, labels)
             total_loss += loss.item()
+            probs = out.softmax(dim=1)
             _, pred = out.max(1)
-            correct += pred.eq(labels).sum().item()
-            total += labels.size(0)
+            
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(pred.cpu().numpy())
+            all_probs.extend(probs.cpu().numpy())
     
-    return total_loss / len(loader), 100. * correct / total
+    val_loss = total_loss / len(loader)
+    
+    all_labels = np.array(all_labels)
+    all_preds = np.array(all_preds)
+    all_probs = np.array(all_probs)
+    
+    _, auc, f1, prec, rec = compute_metrics(all_labels, all_preds, all_probs)
+    val_acc = 100.0 * (all_preds == all_labels).mean()
+    
+    return val_loss, val_acc, auc, f1, prec, rec
 
 
 # =============================================================================
@@ -731,15 +759,23 @@ def main():
         
         train_loss, train_acc = train_epoch(model, train_loader, criterion,
                                            optimizer, scheduler, scaler, device)
-        val_loss, val_acc = validate(model, val_loader, criterion, device)
+        val_loss, val_acc, val_auc, val_f1, val_prec, val_rec = validate(
+            model, val_loader, criterion, device
+        )
         
-        print(f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.2f}%")
-        print(f"Val Loss: {val_loss:.4f}, Acc: {val_acc:.2f}%")
+        print(f"Train Loss: {train_loss:.4f} | Acc: {train_acc:.2f}%")
+        print(f"Val   Loss: {val_loss:.4f} | Acc: {val_acc:.2f}% | "
+              f"AUC: {val_auc:.4f} | F1: {val_f1:.4f} | "
+              f"Prec: {val_prec:.4f} | Rec: {val_rec:.4f}")
         
         if val_acc > best_acc:
             best_acc = val_acc
             torch.save(model.state_dict(), 'best_resnet50_msam.pth')
             print(f"Saved best model: {best_acc:.2f}%")
+    
+    # Save final model
+    torch.save(model.state_dict(), 'final_resnet50_msam.pth')
+    print("\nSaved final model: final_resnet50_msam.pth")
     
     # ------------------------------------------------------------------
     # Inference with TTA

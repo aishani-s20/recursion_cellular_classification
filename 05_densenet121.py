@@ -11,6 +11,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import timm
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, accuracy_score
 from tqdm import tqdm
 import cv2
 
@@ -98,6 +99,17 @@ def create_model(num_classes):
     return model
 
 
+# ============== Metrics ==============
+def compute_metrics(all_labels, all_preds, all_probs):
+    """Compute multi-class classification metrics."""
+    acc = accuracy_score(all_labels, all_preds)
+    auc = roc_auc_score(all_labels, all_probs, multi_class='ovr', average='macro')
+    f1 = f1_score(all_labels, all_preds, average='macro')
+    prec = precision_score(all_labels, all_preds, average='macro')
+    rec = recall_score(all_labels, all_preds, average='macro')
+    return acc, auc, f1, prec, rec
+
+
 # ============== Training ==============
 def train_epoch(model, loader, criterion, optimizer):
     model.train()
@@ -127,7 +139,8 @@ def train_epoch(model, loader, criterion, optimizer):
 
 def validate(model, loader, criterion):
     model.eval()
-    loss_sum, correct, total = 0, 0, 0
+    total_loss = 0
+    all_labels, all_preds, all_probs = [], [], []
     
     with torch.no_grad():
         for imgs, labels in tqdm(loader, desc='Val'):
@@ -135,11 +148,24 @@ def validate(model, loader, criterion):
             out = model(imgs)
             loss = criterion(out, labels)
             
-            loss_sum += loss.item()
-            correct += (out.argmax(1) == labels).sum().item()
-            total += labels.size(0)
+            total_loss += loss.item()
+            probs = out.softmax(dim=1)
+            preds = out.argmax(1)
+            
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(preds.cpu().numpy())
+            all_probs.extend(probs.cpu().numpy())
     
-    return loss_sum / len(loader), 100 * correct / total
+    val_loss = total_loss / len(loader)
+    
+    all_labels = np.array(all_labels)
+    all_preds = np.array(all_preds)
+    all_probs = np.array(all_probs)
+    
+    _, auc, f1, prec, rec = compute_metrics(all_labels, all_preds, all_probs)
+    val_acc = 100.0 * (all_preds == all_labels).mean()
+    
+    return val_loss, val_acc, auc, f1, prec, rec
 
 
 # ============== Main ==============
@@ -190,10 +216,15 @@ def main():
     for epoch in range(EPOCHS):
         print(f"\nEpoch {epoch+1}/{EPOCHS}")
         train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer)
-        val_loss, val_acc = validate(model, val_loader, criterion)
+        val_loss, val_acc, val_auc, val_f1, val_prec, val_rec = validate(
+            model, val_loader, criterion
+        )
         scheduler.step()
         
-        print(f"Train: {train_loss:.4f}, {train_acc:.2f}% | Val: {val_loss:.4f}, {val_acc:.2f}%")
+        print(f"Train: {train_loss:.4f}, {train_acc:.2f}%")
+        print(f"Val:   {val_loss:.4f}, Acc: {val_acc:.2f}% | "
+              f"AUC: {val_auc:.4f} | F1: {val_f1:.4f} | "
+              f"Prec: {val_prec:.4f} | Rec: {val_rec:.4f}")
         
         if val_acc > best_acc:
             best_acc = val_acc
@@ -206,6 +237,10 @@ def main():
             if counter >= patience:
                 print("Early stopping!")
                 break
+    
+    # Save final model
+    torch.save(model.state_dict(), 'final_densenet121.pth')
+    print("\nSaved final model: final_densenet121.pth")
     
     # Inference
     print("\nInference...")

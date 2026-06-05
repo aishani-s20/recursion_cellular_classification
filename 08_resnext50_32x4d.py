@@ -17,6 +17,7 @@ import timm
 from tqdm import tqdm
 import cv2
 import warnings
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, accuracy_score
 
 warnings.filterwarnings('ignore')
 
@@ -57,6 +58,20 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark     = False
 
 set_seed(Config.SEED)
+
+
+# =============================================================================
+# METRICS
+# =============================================================================
+
+def compute_metrics(all_labels, all_preds, all_probs):
+    """Compute multi-class classification metrics."""
+    acc = accuracy_score(all_labels, all_preds)
+    auc = roc_auc_score(all_labels, all_probs, multi_class='ovr', average='macro')
+    f1 = f1_score(all_labels, all_preds, average='macro')
+    prec = precision_score(all_labels, all_preds, average='macro')
+    rec = recall_score(all_labels, all_preds, average='macro')
+    return acc, auc, f1, prec, rec
 
 
 # =============================================================================
@@ -249,8 +264,9 @@ def train_epoch(model, loader, criterion, optimizer, scheduler, scaler, device):
 
 def validate(model, loader, criterion, device):
     model.eval()
-    total_loss = correct = total = 0
-
+    total_loss = 0
+    all_labels, all_preds, all_probs = [], [], []
+    
     with torch.no_grad():
         for imgs, labels in tqdm(loader, desc='Val  ', leave=False):
             imgs, labels = imgs.to(device), labels.to(device)
@@ -258,11 +274,23 @@ def validate(model, loader, criterion, device):
                 out  = model(imgs)
                 loss = criterion(out, labels)
             total_loss += loss.item()
-            _, pred     = out.max(1)
-            correct    += pred.eq(labels).sum().item()
-            total      += labels.size(0)
-
-    return total_loss / len(loader), 100. * correct / total
+            probs = out.softmax(dim=1)
+            _, pred = out.max(1)
+            
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(pred.cpu().numpy())
+            all_probs.extend(probs.cpu().numpy())
+    
+    val_loss = total_loss / len(loader)
+    
+    all_labels = np.array(all_labels)
+    all_preds = np.array(all_preds)
+    all_probs = np.array(all_probs)
+    
+    _, auc, f1, prec, rec = compute_metrics(all_labels, all_preds, all_probs)
+    val_acc = 100.0 * (all_preds == all_labels).mean()
+    
+    return val_loss, val_acc, auc, f1, prec, rec
 
 
 # =============================================================================
@@ -393,15 +421,23 @@ def main():
 
         tr_loss, tr_acc = train_epoch(model, train_loader, criterion,
                                       optimizer, scheduler, scaler, device)
-        vl_loss, vl_acc = validate(model, val_loader, criterion, device)
+        vl_loss, vl_acc, vl_auc, vl_f1, vl_prec, vl_rec = validate(
+            model, val_loader, criterion, device
+        )
 
-        print(f"  Train  loss={tr_loss:.4f}  acc={tr_acc:.2f}%")
-        print(f"  Val    loss={vl_loss:.4f}  acc={vl_acc:.2f}%")
+        print(f"Train  loss={tr_loss:.4f}  acc={tr_acc:.2f}%")
+        print(f"Val    loss={vl_loss:.4f}  acc={vl_acc:.2f}%  "
+              f"AUC={vl_auc:.4f}  F1={vl_f1:.4f}  "
+              f"Prec={vl_prec:.4f}  Rec={vl_rec:.4f}")
 
         if vl_acc > best_acc:
             best_acc = vl_acc
             torch.save(model.state_dict(), best_path)
             print(f"  ✓ Saved best model (val acc={best_acc:.2f}%)")
+
+    print(f"\nSaving final model...")
+    torch.save(model.state_dict(), 'final_resnext50_32x4d.pth')
+    print(f"Saved final_resnext50_32x4d.pth")
 
     print(f"\nLoading best weights (val acc={best_acc:.2f}%)...")
     model.load_state_dict(torch.load(best_path, map_location=device))  # fixed: map_location

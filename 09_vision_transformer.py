@@ -12,6 +12,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import timm
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, accuracy_score
 from tqdm import tqdm
 import cv2
 
@@ -150,6 +151,16 @@ class ViTModel(nn.Module):
         return self.classifier(features)
 
 
+def compute_metrics(all_labels, all_preds, all_probs):
+    """Compute multi-class classification metrics."""
+    acc = accuracy_score(all_labels, all_preds)
+    auc = roc_auc_score(all_labels, all_probs, multi_class='ovr', average='macro')
+    f1 = f1_score(all_labels, all_preds, average='macro')
+    prec = precision_score(all_labels, all_preds, average='macro')
+    rec = recall_score(all_labels, all_preds, average='macro')
+    return acc, auc, f1, prec, rec
+
+
 def train_epoch(model, loader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
@@ -178,9 +189,8 @@ def train_epoch(model, loader, criterion, optimizer, device):
 
 def validate(model, loader, criterion, device):
     model.eval()
-    running_loss = 0.0
-    correct = 0
-    total = 0
+    total_loss = 0
+    all_labels, all_preds, all_probs = [], [], []
     
     with torch.no_grad():
         for imgs, labels in tqdm(loader, desc='Validation'):
@@ -188,12 +198,24 @@ def validate(model, loader, criterion, device):
             outputs = model(imgs)
             loss = criterion(outputs, labels)
             
-            running_loss += loss.item()
+            total_loss += loss.item()
+            probs = outputs.softmax(dim=1)
             _, predicted = outputs.max(1)
-            total += labels.size(0)
-            correct += predicted.eq(labels).sum().item()
+            
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(predicted.cpu().numpy())
+            all_probs.extend(probs.cpu().numpy())
     
-    return running_loss / len(loader), 100. * correct / total
+    val_loss = total_loss / len(loader)
+    
+    all_labels = np.array(all_labels)
+    all_preds = np.array(all_preds)
+    all_probs = np.array(all_probs)
+    
+    _, auc, f1, prec, rec = compute_metrics(all_labels, all_preds, all_probs)
+    val_acc = 100.0 * (all_preds == all_labels).mean()
+    
+    return val_loss, val_acc, auc, f1, prec, rec
 
 
 def main():
@@ -256,16 +278,24 @@ def main():
         print(f"\nEpoch {epoch+1}/{Config.EPOCHS}")
         
         train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, device)
-        val_loss, val_acc = validate(model, val_loader, criterion, device)
+        val_loss, val_acc, val_auc, val_f1, val_prec, val_rec = validate(
+            model, val_loader, criterion, device
+        )
         scheduler.step()
         
-        print(f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.2f}%")
-        print(f"Val Loss: {val_loss:.4f}, Acc: {val_acc:.2f}%")
+        print(f"Train Loss: {train_loss:.4f} | Acc: {train_acc:.2f}%")
+        print(f"Val   Loss: {val_loss:.4f} | Acc: {val_acc:.2f}% | "
+              f"AUC: {val_auc:.4f} | F1: {val_f1:.4f} | "
+              f"Prec: {val_prec:.4f} | Rec: {val_rec:.4f}")
         
         if val_acc > best_acc:
             best_acc = val_acc
             torch.save(model.state_dict(), 'best_vit.pth')
             print(f"Saved best model: {best_acc:.2f}%")
+    
+    # Save final model
+    torch.save(model.state_dict(), 'final_vit.pth')
+    print("\nSaved final model: final_vit.pth")
     
     # Inference
     print("\nInference...")
