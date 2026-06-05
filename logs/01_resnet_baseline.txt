@@ -5,116 +5,130 @@ ResNet50 Baseline - No Augmentation
 
 Loading data...
 Training samples: 17689
-Test samples: 19897
 Cell types: ['HUVEC']
 Number of classes: 1108
 Train: 15035, Val: 2654
 
 Creating model: resnet50...
 
-Epoch 1/20
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
 
-Training: 100%|██████████| 470/470 [08:03<00:00,  1.03s/it, loss=6.9417, acc=0.15%]
-Validation: 100%|██████████| 83/83 [01:25<00:00,  1.03s/it]
+model.safetensors: 100%
+ 102M/102M [00:02<00:00, 93.9MB/s]
 
-Train Loss: 6.9417, Acc: 0.15%
-Val Loss: 6.7151, Acc: 0.41%
+
+Epoch 1/10
+
+Training: 100%|██████████| 470/470 [10:05<00:00,  1.29s/it, loss=6.9417, acc=0.15%]
+Validation: 100%|██████████| 83/83 [01:48<00:00,  1.31s/it]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+
+Train Loss: 6.9417 | Acc: 0.15%
+Val   Loss: 6.7151 | Acc: 0.41% | AUC: 0.7668 | F1: 0.0005 | Prec: 0.0004 | Rec: 0.0045
 Saved best model: 0.41%
 
-Epoch 2/20
+Epoch 2/10
 
-Training: 100%|██████████| 470/470 [07:24<00:00,  1.06it/s, loss=6.1675, acc=1.48%]
-Validation: 100%|██████████| 83/83 [01:16<00:00,  1.09it/s]
+Training: 100%|██████████| 470/470 [05:52<00:00,  1.33it/s, loss=6.1782, acc=1.40%]
+Validation: 100%|██████████| 83/83 [00:52<00:00,  1.58it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 6.1675, Acc: 1.48%
-Val Loss: 5.3929, Acc: 4.45%
-Saved best model: 4.45%
+Train Loss: 6.1782 | Acc: 1.40%
+Val   Loss: 5.3732 | Acc: 5.01% | AUC: 0.9262 | F1: 0.0276 | Prec: 0.0262 | Rec: 0.0526
+Saved best model: 5.01%
 
-Epoch 3/20
+Epoch 3/10
 
-Training: 100%|██████████| 470/470 [07:19<00:00,  1.07it/s, loss=4.6235, acc=11.52%]
-Validation: 100%|██████████| 83/83 [01:17<00:00,  1.07it/s]
+Training: 100%|██████████| 470/470 [05:51<00:00,  1.34it/s, loss=4.6563, acc=11.50%]
+Validation: 100%|██████████| 83/83 [00:51<00:00,  1.62it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 4.6235, Acc: 11.52%
-Val Loss: 4.2424, Acc: 15.00%
-Saved best model: 15.00%
+Train Loss: 4.6563 | Acc: 11.50%
+Val   Loss: 4.3221 | Acc: 14.73% | AUC: 0.9590 | F1: 0.1132 | Prec: 0.1210 | Rec: 0.1500
+Saved best model: 14.73%
 
-Epoch 4/20
+Epoch 4/10
 
-Training: 100%|██████████| 470/470 [07:28<00:00,  1.05it/s, loss=3.2776, acc=30.41%]
-Validation: 100%|██████████| 83/83 [01:18<00:00,  1.06it/s]
+Training: 100%|██████████| 470/470 [05:52<00:00,  1.33it/s, loss=3.3380, acc=29.94%]
+Validation: 100%|██████████| 83/83 [00:49<00:00,  1.66it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 3.2776, Acc: 30.41%
-Val Loss: 3.5054, Acc: 26.83%
-Saved best model: 26.83%
+Train Loss: 3.3380 | Acc: 29.94%
+Val   Loss: 3.5857 | Acc: 24.27% | AUC: 0.9748 | F1: 0.2049 | Prec: 0.2182 | Rec: 0.2438
+Saved best model: 24.27%
 
-Epoch 5/20
+Epoch 5/10
 
-Training: 100%|██████████| 470/470 [07:24<00:00,  1.06it/s, loss=2.3287, acc=48.88%]
-Validation: 100%|██████████| 83/83 [01:16<00:00,  1.08it/s]
+Training: 100%|██████████| 470/470 [05:52<00:00,  1.33it/s, loss=2.4297, acc=48.22%]
+Validation: 100%|██████████| 83/83 [00:51<00:00,  1.61it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 2.3287, Acc: 48.88%
-Val Loss: 3.3017, Acc: 30.18%
-Saved best model: 30.18%
+Train Loss: 2.4297 | Acc: 48.22%
+Val   Loss: 3.2956 | Acc: 30.33% | AUC: 0.9781 | F1: 0.2702 | Prec: 0.2901 | Rec: 0.3067
+Saved best model: 30.33%
 
-Epoch 6/20
+Epoch 6/10
 
-Training: 100%|██████████| 470/470 [07:25<00:00,  1.06it/s, loss=1.6606, acc=64.31%]
-Validation: 100%|██████████| 83/83 [01:19<00:00,  1.05it/s]
+Training: 100%|██████████| 470/470 [05:52<00:00,  1.33it/s, loss=1.8331, acc=61.93%]
+Validation: 100%|██████████| 83/83 [00:53<00:00,  1.54it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 1.6606, Acc: 64.31%
-Val Loss: 3.1569, Acc: 34.25%
-Saved best model: 34.25%
+Train Loss: 1.8331 | Acc: 61.93%
+Val   Loss: 3.1245 | Acc: 34.06% | AUC: 0.9808 | F1: 0.3096 | Prec: 0.3278 | Rec: 0.3437
+Saved best model: 34.06%
 
-Epoch 7/20
+Epoch 7/10
 
-Training: 100%|██████████| 470/470 [07:25<00:00,  1.05it/s, loss=1.1839, acc=75.44%]
-Validation: 100%|██████████| 83/83 [01:18<00:00,  1.06it/s]
+Training: 100%|██████████| 470/470 [05:52<00:00,  1.33it/s, loss=1.4440, acc=71.74%]
+Validation: 100%|██████████| 83/83 [00:50<00:00,  1.64it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 1.1839, Acc: 75.44%
-Val Loss: 3.0905, Acc: 34.93%
-Saved best model: 34.93%
+Train Loss: 1.4440 | Acc: 71.74%
+Val   Loss: 3.0479 | Acc: 35.27% | AUC: 0.9819 | F1: 0.3220 | Prec: 0.3376 | Rec: 0.3548
+Saved best model: 35.27%
 
-Epoch 8/20
+Epoch 8/10
 
-Training: 100%|██████████| 470/470 [07:14<00:00,  1.08it/s, loss=0.8469, acc=83.84%]
-Validation: 100%|██████████| 83/83 [01:19<00:00,  1.04it/s]
+Training: 100%|██████████| 470/470 [05:53<00:00,  1.33it/s, loss=1.2069, acc=78.32%]
+Validation: 100%|██████████| 83/83 [00:51<00:00,  1.61it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 0.8469, Acc: 83.84%
-Val Loss: 3.1443, Acc: 36.32%
-Saved best model: 36.32%
+Train Loss: 1.2069 | Acc: 78.32%
+Val   Loss: 2.9688 | Acc: 36.44% | AUC: 0.9823 | F1: 0.3379 | Prec: 0.3529 | Rec: 0.3664
+Saved best model: 36.44%
 
-Epoch 9/20
+Epoch 9/10
 
-Training: 100%|██████████| 470/470 [07:32<00:00,  1.04it/s, loss=0.5958, acc=89.41%]
-Validation: 100%|██████████| 83/83 [01:14<00:00,  1.11it/s]
+Training: 100%|██████████| 470/470 [05:52<00:00,  1.33it/s, loss=1.0592, acc=81.96%]
+Validation: 100%|██████████| 83/83 [00:51<00:00,  1.62it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 0.5958, Acc: 89.41%
-Val Loss: 3.1267, Acc: 37.11%
-Saved best model: 37.11%
+Train Loss: 1.0592 | Acc: 81.96%
+Val   Loss: 2.9528 | Acc: 37.26% | AUC: 0.9823 | F1: 0.3485 | Prec: 0.3681 | Rec: 0.3755
+Saved best model: 37.26%
 
-Epoch 10/20
+Epoch 10/10
 
-Training: 100%|██████████| 470/470 [07:00<00:00,  1.12it/s, loss=0.4288, acc=92.91%]
-Validation: 100%|██████████| 83/83 [01:11<00:00,  1.16it/s]
+Training: 100%|██████████| 470/470 [05:52<00:00,  1.33it/s, loss=0.9937, acc=83.66%]
+Validation: 100%|██████████| 83/83 [00:53<00:00,  1.55it/s]
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 
-Train Loss: 0.4288, Acc: 92.91%
-Val Loss: 3.2282, Acc: 38.06%
-Saved best model: 38.06%
+Train Loss: 0.9937 | Acc: 83.66%
+Val   Loss: 2.9565 | Acc: 37.49% | AUC: 0.9824 | F1: 0.3497 | Prec: 0.3646 | Rec: 0.3776
+Saved best model: 37.49%
 
-Epoch 11/20
+Saved final model: final_resnet50_baseline.pth
 
-Training: 100%|██████████| 470/470 [06:46<00:00,  1.16it/s, loss=0.3056, acc=95.35%]
-Validation: 100%|██████████| 83/83 [01:09<00:00,  1.20it/s]
-
-Train Loss: 0.3056, Acc: 95.35%
-Val Loss: 3.2887, Acc: 38.09%
-Saved best model: 38.09%
-
-Epoch 12/20
-
-Training: 100%|██████████| 470/470 [07:06<00:00,  1.10it/s, loss=0.2157, acc=97.08%]
-Validation: 100%|██████████| 83/83 [01:16<00:00,  1.08it/s]
-
-Train Loss: 0.2157, Acc: 97.08%
-Val Loss: 3.3589, Acc: 36.93%
+============================================================
+Training Complete! Best Val Acc: 37.49%
+============================================================
