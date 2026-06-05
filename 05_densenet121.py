@@ -22,7 +22,7 @@ print(f"Using device: {device}")
 # Config
 DATA_DIR = '/kaggle/input/competitions/recursion-cellular-image-classification'
 TRAIN_CSV = f'{DATA_DIR}/train.csv'
-TEST_CSV = '/kaggle/input/datasets/himanshusardana2/corrected-test-csv-recurrence-cellular/test.csv'
+TEST_CSV = None  # No test set; using stratified train/val split
 
 MODEL_NAME = 'densenet121'
 IMG_SIZE = 320
@@ -177,7 +177,6 @@ def main():
     # Load data
     print("\nLoading data...")
     train_df = pd.read_csv(TRAIN_CSV)
-    test_df = pd.read_csv(TEST_CSV)
     
     train_df['cell_type'] = train_df['experiment'].str.split('-').str[0]
     train_df = train_df[train_df['cell_type'].isin(CELL_TYPES)].reset_index(drop=True)
@@ -242,28 +241,9 @@ def main():
     torch.save(model.state_dict(), 'final_densenet121.pth')
     print("\nSaved final model: final_densenet121.pth")
     
-    # Inference
-    print("\nInference...")
-    model.load_state_dict(torch.load('best_densenet121.pth'))
-    model.eval()
-    
-    test_loader = DataLoader(SimpleDataset(test_df, DATA_DIR, mode='test'),
-                             batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
-    
-    preds, ids = [], []
-    with torch.no_grad():
-        for imgs, img_ids in tqdm(test_loader, desc='Test'):
-            out = model(imgs.to(device))
-            preds.extend(out.argmax(1).cpu().numpy())
-            ids.extend(img_ids)
-    
-    # Submission
-    label_to_sirna = {v: k for k, v in sirna_to_label.items()}
-    submission = pd.DataFrame({'id_code': ids, 'sirna': [label_to_sirna[p] for p in preds]})
-    submission.to_csv('submission_densenet121.csv', index=False)
-    
-    print(f"\n✓ Done! Best Val Acc: {best_acc:.2f}%")
-    print(f"Saved submission_densenet121.csv")
+    print(f"\n{'='*60}")
+    print(f"Training Complete! Best Val Acc: {best_acc:.2f}%")
+    print(f"{'='*60}")
 
 
 if __name__ == '__main__':

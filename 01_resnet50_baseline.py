@@ -16,7 +16,7 @@ print(f"Using device: {device}")
 class Config:
     DATA_DIR = '/kaggle/input/competitions/recursion-cellular-image-classification'
     TRAIN_CSV = f'{DATA_DIR}/train.csv'
-    TEST_CSV = '/kaggle/input/datasets/himanshusardana2/corrected-test-csv-recurrence-cellular/test.csv'
+    TEST_CSV = None  # No test set; using stratified train/val split
     
     MODEL_NAME = 'resnet50'
     IMG_SIZE = 320
@@ -196,17 +196,15 @@ def main():
     # Load data
     print("\nLoading data...")
     train_df = pd.read_csv(Config.TRAIN_CSV)
-    test_df = pd.read_csv(Config.TEST_CSV)
     
     train_df['cell_type'] = train_df['experiment'].str.split('-').str[0]
-    test_df['cell_type'] = test_df['experiment'].str.split('-').str[0]
     
     # Filter HUVEC only
     train_df = train_df[train_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
     
     print(f"Training samples: {len(train_df)}")
-    print(f"Test samples: {len(test_df)}")
     print(f"Cell types: {train_df['cell_type'].unique()}")
+
     
     # Convert sirna to numeric labels
     train_df['sirna_id'] = train_df['sirna'].str.replace('sirna_', '').astype(int)
@@ -267,35 +265,9 @@ def main():
     torch.save(model.state_dict(), 'final_resnet50_baseline.pth')
     print("\nSaved final model: final_resnet50_baseline.pth")
     
-    # Inference
-    print("\nInference...")
-    model.load_state_dict(torch.load('best_resnet50_baseline.pth'))
-    
-    test_loader = DataLoader(
-        CellularDataset(test_df, Config.DATA_DIR, mode='test'),
-        batch_size=Config.BATCH_SIZE, shuffle=False, num_workers=Config.NUM_WORKERS
-    )
-    
-    model.eval()
-    predictions, ids = [], []
-    
-    with torch.no_grad():
-        for imgs, img_ids in tqdm(test_loader, desc='Inference'):
-            imgs = imgs.to(device)
-            outputs = model(imgs)
-            _, preds = outputs.max(1)
-            predictions.extend(preds.cpu().numpy())
-            ids.extend(img_ids)
-    
-    # Create submission
-    label_to_sirna = {v: k for k, v in sirna_to_label.items()}
-    predictions = [label_to_sirna[p] for p in predictions]
-    
-    submission = pd.DataFrame({'id_code': ids, 'sirna': predictions})
-    submission.to_csv('submission_resnet50_baseline.csv', index=False)
-    
-    print(f"\n✓ Complete! Best Val Acc: {best_acc:.2f}%")
-    print("Saved submission_resnet50_baseline.csv")
+    print(f"\n{'='*60}")
+    print(f"Training Complete! Best Val Acc: {best_acc:.2f}%")
+    print(f"{'='*60}")
 
 
 if __name__ == '__main__':

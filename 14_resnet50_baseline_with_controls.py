@@ -2,8 +2,7 @@
 Recursion Cellular Image Classification
 ========================================
 ResNet50 with 6-channel input, per-channel z-score normalization,
-mixed precision training, control-well plate normalization,
-and dual-site TTA.
+mixed precision training, and control-well plate normalization.
 """
 
 import numpy as np
@@ -33,10 +32,8 @@ print(f"Using device: {device}")
 class Config:
     DATA_DIR = '/kaggle/input/competitions/recursion-cellular-image-classification'
     TRAIN_CSV = f'{DATA_DIR}/train.csv'
-    TEST_CSV = f'{DATA_DIR}/test.csv'
     PIXEL_STATS = f'{DATA_DIR}/pixel_stats.csv'
     TRAIN_CONTROLS_CSV = f'{DATA_DIR}/train_controls.csv'
-    TEST_CONTROLS_CSV = f'{DATA_DIR}/test_controls.csv'
     
     MODEL_NAME = 'resnet50'
     IMG_SIZE = 320
@@ -352,55 +349,6 @@ def validate(model, loader, criterion, device):
 
 
 # =============================================================================
-# TEST-TIME AUGMENTATION
-# =============================================================================
-
-def predict_tta(model, test_df, data_dir, stats_lookup, device, plate_stats=None):
-    """
-    6 TTA passes: site1/site2 x {original, hflip, vflip}
-    """
-    model.eval()
-    tta_configs = [
-        ('1', None), ('1', 'h'), ('1', 'v'),
-        ('2', None), ('2', 'h'), ('2', 'v'),
-    ]
-    all_probs = []
-    ids = None
-    
-    for site, flip in tta_configs:
-        ds = CellularDataset(test_df, data_dir, stats_lookup,
-                            mode='test', site=site, plate_stats=plate_stats)
-        loader = DataLoader(ds, batch_size=Config.BATCH_SIZE,
-                           shuffle=False, num_workers=Config.NUM_WORKERS,
-                           pin_memory=True)
-        
-        probs_list = []
-        id_list = []
-        
-        with torch.no_grad():
-            for imgs, img_ids in tqdm(loader,
-                                     desc=f'TTA site{site} {flip or "orig"}',
-                                     leave=False):
-                imgs = imgs.to(device)
-                if flip == 'h':
-                    imgs = torch.flip(imgs, dims=[3])
-                elif flip == 'v':
-                    imgs = torch.flip(imgs, dims=[2])
-                with autocast():
-                    out = model(imgs)
-                probs_list.append(out.softmax(dim=1).cpu())
-                id_list.extend(img_ids)
-        
-        all_probs.append(torch.cat(probs_list, dim=0))
-        if ids is None:
-            ids = id_list
-    
-    avg_probs = torch.stack(all_probs).mean(dim=0)
-    preds = avg_probs.argmax(dim=1).numpy()
-    return preds, ids
-
-
-# =============================================================================
 # MAIN
 # =============================================================================
 
@@ -412,21 +360,16 @@ def main():
     # Load data
     print("\nLoading data...")
     train_df = pd.read_csv(Config.TRAIN_CSV)
-    test_df = pd.read_csv(Config.TEST_CSV)
     train_controls_df = pd.read_csv(Config.TRAIN_CONTROLS_CSV)
-    test_controls_df = pd.read_csv(Config.TEST_CONTROLS_CSV)
     
     print(f"  train_controls.csv: {len(train_controls_df)} rows")
-    print(f"  test_controls.csv: {len(test_controls_df)} rows")
     
     train_df['cell_type'] = train_df['experiment'].str.split('-').str[0]
-    test_df['cell_type'] = test_df['experiment'].str.split('-').str[0]
     
     # Filter HUVEC only
     train_df = train_df[train_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
     
     print(f"\nTraining samples: {len(train_df)}")
-    print(f"Test samples: {len(test_df)}")
     print(f"Cell types: {train_df['cell_type'].unique()}")
     
     # Convert sirna to numeric labels
@@ -477,20 +420,12 @@ def main():
     # Compute plate-level control statistics
     # ------------------------------------------------------------------
     plate_stats_train = None
-    plate_stats_test = None
     
     if Config.USE_PLATE_NORMALIZATION:
         print("\n--- Computing plate control statistics ---")
         plate_stats_train = compute_plate_control_stats(
             train_controls_df, Config.DATA_DIR, mode='train'
         )
-        plate_stats_test = compute_plate_control_stats(
-            test_controls_df, Config.DATA_DIR, mode='test'
-        )
-        # Fallback to train stats for shared plates
-        for key, val in plate_stats_train.items():
-            if key not in plate_stats_test:
-                plate_stats_test[key] = val
     
     # ------------------------------------------------------------------
     # Split data (stratified)
@@ -580,26 +515,9 @@ def main():
     torch.save(model.state_dict(), 'final_resnet50_baseline.pth')
     print("\nSaved final model: final_resnet50_baseline.pth")
     
-    # ------------------------------------------------------------------
-    # Inference with TTA
-    # ------------------------------------------------------------------
     print(f"\n{'='*60}")
-    print(f"Loading best weights (val acc={best_acc:.2f}%)...")
-    model.load_state_dict(torch.load('best_resnet50_baseline.pth', map_location=device))
-    
-    print("Running TTA inference...")
-    preds, ids = predict_tta(model, test_df, Config.DATA_DIR, stats_lookup,
-                            device, plate_stats=plate_stats_test)
-    
-    # Create submission
-    predictions = [label_to_sirna[int(p)] for p in preds]
-    submission = pd.DataFrame({'id_code': ids, 'sirna': predictions})
-    submission.to_csv('submission_resnet50_baseline.csv', index=False)
-    
-    print(f"\n{'='*60}")
-    print(f"Complete! Best Val Acc: {best_acc:.2f}%")
-    print("Saved submission_resnet50_baseline.csv")
-    print(submission.head())
+    print(f"Training Complete! Best Val Acc: {best_acc:.2f}%")
+    print(f"{'='*60}")
 
 
 if __name__ == '__main__':

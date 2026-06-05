@@ -16,7 +16,7 @@ print(f"Using device: {device}")
 class Config:
     DATA_DIR = '/kaggle/input/competitions/recursion-cellular-image-classification'
     TRAIN_CSV = f'{DATA_DIR}/train.csv'
-    TEST_CSV = '/kaggle/input/datasets/himanshusardana2/corrected-test-csv-recurrence-cellular/test.csv'
+    TEST_CSV = None  # No test set; using stratified train/val split
     
     MODEL_NAME = 'resnet50'  
     IMG_SIZE = 320  
@@ -207,18 +207,14 @@ def main():
     # Load data
     print("Loading data...")
     train_df = pd.read_csv(Config.TRAIN_CSV)
-    test_df = pd.read_csv(Config.TEST_CSV)
     
     # Extract cell type from experiment column
     train_df['cell_type'] = train_df['experiment'].str.split('-').str[0]
-    test_df['cell_type'] = test_df['experiment'].str.split('-').str[0]
     
     # Filter by cell type for speed
     train_df = train_df[train_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
-    # test_df = test_df[test_df['cell_type'].isin(Config.CELL_TYPES)].reset_index(drop=True)
     
     print(f"Training samples: {len(train_df)}")
-    print(f"Test samples: {len(test_df)}")
     print(f"Cell types in train: {train_df['cell_type'].unique()}")
     
     # Convert sirna labels to numeric (sirna_1 -> 1, sirna_10 -> 10, etc.)
@@ -282,43 +278,9 @@ def main():
     torch.save(model.state_dict(), 'final_resnet50.pth')
     print("\nSaved final model: final_resnet50.pth")
     
-    # Load best model for inference
-    print("\nLoading best model for inference...")
-    model.load_state_dict(torch.load('best_resnet50.pth'))
-    
-    # Inference on test set
-    print("Generating predictions...")
-    test_dataset = CellularDataset(test_df, Config.DATA_DIR, mode='test')
-    test_loader = DataLoader(test_dataset, batch_size=Config.BATCH_SIZE, 
-                             shuffle=False, num_workers=Config.NUM_WORKERS)
-    
-    model.eval()
-    predictions = []
-    ids = []
-    
-    with torch.no_grad():
-        for imgs, img_ids in tqdm(test_loader, desc='Inference'):
-            imgs = imgs.to(device)
-            outputs = model(imgs)
-            _, preds = outputs.max(1)
-            
-            predictions.extend(preds.cpu().numpy())
-            ids.extend(img_ids)
-    
-    # Convert predictions back to sirna format
-    label_to_sirna = {idx: sirna for sirna, idx in sirna_to_label.items()}
-    predictions_sirna = [label_to_sirna[pred] for pred in predictions]
-    
-    # Create submission
-    submission = pd.DataFrame({
-        'id_code': ids,
-        'sirna': predictions_sirna
-    })
-    submission.to_csv('submission.csv', index=False)
-    print("\nSubmission saved to submission.csv")
-    print(f"Best validation accuracy: {best_acc:.2f}%")
-    print("Sample predictions:")
-    print(submission.head(10))
+    print(f"\n{'='*60}")
+    print(f"Training Complete! Best Val Acc: {best_acc:.2f}%")
+    print(f"{'='*60}")
 
 if __name__ == '__main__':
     main()

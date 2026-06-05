@@ -32,7 +32,7 @@ print(f"Using device: {device}")
 class Config:
     DATA_DIR    = '/kaggle/input/competitions/recursion-cellular-image-classification'
     TRAIN_CSV   = f'{DATA_DIR}/train.csv'
-    TEST_CSV    = f'{DATA_DIR}/test.csv'
+    TEST_CSV    = None  # No test set; using stratified train/val split
     PIXEL_STATS = f'{DATA_DIR}/pixel_stats.csv'
 
     MODEL_NAME   = 'resnext50_32x4d'
@@ -294,63 +294,12 @@ def validate(model, loader, criterion, device):
 
 
 # =============================================================================
-# TEST-TIME AUGMENTATION
-# =============================================================================
-
-def predict_tta(model, test_df, data_dir, stats_lookup, device):
-    """
-    6 TTA passes: site1/site2 × {original, hflip, vflip}
-    Returns (predictions_array, id_codes_list).
-    """
-    model.eval()
-    tta_configs = [
-        ('1', None), ('1', 'h'), ('1', 'v'),
-        ('2', None), ('2', 'h'), ('2', 'v'),
-    ]
-    all_probs = []
-    ids       = None
-
-    for site, flip in tta_configs:
-        ds     = CellularDataset(test_df, data_dir, stats_lookup,
-                                 mode='test', site=site)
-        loader = DataLoader(ds, batch_size=Config.BATCH_SIZE,
-                            shuffle=False, num_workers=Config.NUM_WORKERS,
-                            pin_memory=True)            # fixed: pin_memory added
-
-        probs_list = []
-        id_list    = []
-
-        with torch.no_grad():
-            for imgs, img_ids in tqdm(loader,
-                                      desc=f'TTA site{site} {flip or "orig"}',
-                                      leave=False):
-                imgs = imgs.to(device)
-                if flip == 'h':
-                    imgs = torch.flip(imgs, dims=[3])
-                elif flip == 'v':
-                    imgs = torch.flip(imgs, dims=[2])
-                with autocast():
-                    out = model(imgs)
-                probs_list.append(out.softmax(dim=1).cpu())
-                id_list.extend(img_ids)
-
-        all_probs.append(torch.cat(probs_list, dim=0))
-        if ids is None:
-            ids = id_list
-
-    avg_probs = torch.stack(all_probs).mean(dim=0)
-    preds     = avg_probs.argmax(dim=1).numpy()
-    return preds, ids
-
-
-# =============================================================================
 # MAIN
 # =============================================================================
 
 def main():
     print("Loading CSVs...")
     train_df = pd.read_csv(Config.TRAIN_CSV)
-    test_df  = pd.read_csv(Config.TEST_CSV)
 
     # Guard against both integer and string sirna formats
     if train_df['sirna'].dtype == object:
@@ -360,13 +309,11 @@ def main():
 
     unique_sirnas      = sorted(train_df['sirna_id'].unique())
     sirna_to_label     = {s: i for i, s in enumerate(unique_sirnas)}
-    label_to_sirna     = {i: s for s, i in sirna_to_label.items()}
     train_df['label']  = train_df['sirna_id'].map(sirna_to_label)
     Config.NUM_CLASSES = len(unique_sirnas)
 
     print(f"Classes      : {Config.NUM_CLASSES}")
     print(f"Train wells  : {len(train_df)}")
-    print(f"Test wells   : {len(test_df)}")
 
     # Experiment-aware split — no experiment leaks into val
     rng      = np.random.default_rng(Config.SEED)
@@ -439,17 +386,9 @@ def main():
     torch.save(model.state_dict(), 'final_resnext50_32x4d.pth')
     print(f"Saved final_resnext50_32x4d.pth")
 
-    print(f"\nLoading best weights (val acc={best_acc:.2f}%)...")
-    model.load_state_dict(torch.load(best_path, map_location=device))  # fixed: map_location
-
-    print("Running TTA inference...")
-    preds, ids = predict_tta(model, test_df, Config.DATA_DIR, stats_lookup, device)
-
-    sirna_preds = [label_to_sirna[int(p)] for p in preds]
-    submission  = pd.DataFrame({'id_code': ids, 'sirna': sirna_preds})
-    submission.to_csv('submission_resnext50_32x4d.csv', index=False)
-    print(f"\nDone. submission_resnext50_32x4d.csv saved  |  Best val acc: {best_acc:.2f}%")
-    print(submission.head())
+    print(f"\n{'='*60}")
+    print(f"Training Complete! Best Val Acc: {best_acc:.2f}%")
+    print(f"{'='*60}")
 
 
 if __name__ == '__main__':

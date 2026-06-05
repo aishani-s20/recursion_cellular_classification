@@ -16,7 +16,7 @@ print(f"Using device: {device}")
 class Config:
     DATA_DIR = '/kaggle/input/competitions/recursion-cellular-image-classification'
     TRAIN_CSV = f'{DATA_DIR}/train.csv'
-    TEST_CSV = '/kaggle/input/datasets/himanshusardana2/corrected-test-csv-recurrence-cellular/test.csv'
+    TEST_CSV = None  # No test set; using stratified train/val split
     
     MODEL_NAME = 'efficientnet_b0'
     IMG_SIZE = 384
@@ -195,51 +195,13 @@ def validate(model, loader, criterion, device):
     _, auc, f1, prec, rec = compute_metrics(all_labels, all_preds, all_probs)
     val_acc = 100.0 * (all_preds == all_labels).mean()
     
-    return val_loss, val_acc, auc, f1, prec, rec
-
-def predict_with_tta(model, df, data_dir, device):
-    model.eval()
-    configs = [('1', None), ('1', 'h'), ('1', 'v'), ('2', None), ('2', 'h'), ('2', 'v')]
-    all_probs = []
-    ids = None
-    
-    for site, flip in configs:
-        dataset = CellularDataset(df, data_dir, mode='test', site=site)
-        loader = DataLoader(dataset, batch_size=Config.BATCH_SIZE,
-                          shuffle=False, num_workers=Config.NUM_WORKERS)
-        
-        probs = []
-        batch_ids = []
-        with torch.no_grad():
-            for imgs, img_ids in tqdm(loader, desc=f'Site{site} {flip or ""}'):
-                imgs = imgs.to(device)
-                if flip == 'h':
-                    imgs = torch.flip(imgs, dims=[3])
-                elif flip == 'v':
-                    imgs = torch.flip(imgs, dims=[2])
-                outputs = model(imgs)
-                probs.append(outputs.softmax(dim=1).cpu())
-                batch_ids.extend(img_ids)
-        
-        probs = torch.cat(probs, dim=0)
-        all_probs.append(probs)
-        if ids is None:
-            ids = batch_ids
-    
-    avg_probs = torch.stack(all_probs).mean(dim=0)
-    preds = avg_probs.argmax(dim=1).numpy()
-    return preds, ids
-
-def main():
+    return val_loss, val_acc, auc, f1, prec, recdef main():
     print("Loading data...")
     train_df = pd.read_csv(Config.TRAIN_CSV)
-    test_df = pd.read_csv(Config.TEST_CSV)
     
     train_df['cell_type'] = train_df['experiment'].str.split('-').str[0]
-    test_df['cell_type'] = test_df['experiment'].str.split('-').str[0]
     
     print(f"Training samples: {len(train_df)}")
-    print(f"Test samples: {len(test_df)}")
     print(f"Cell types in train: {train_df['cell_type'].unique()}")
     
     train_df['sirna_id'] = train_df['sirna'].str.replace('sirna_', '').astype(int)
@@ -299,20 +261,9 @@ def main():
     torch.save(model.state_dict(), 'final_efficientnet_b0.pth')
     print("\nSaved final model: final_efficientnet_b0.pth")
     
-    print("\nInference with TTA (dual site + fl)...")
-    model.load_state_dict(torch.load('best_efficientnet_b0.pth'))
-    
-    predictions, ids = predict_with_tta(model, test_df, Config.DATA_DIR, device)
-    
-    label_to_sirna = {v: k for k, v in sirna_to_label.items()}
-    predictions = [label_to_sirna[p] for p in predictions]
-    
-    submission = pd.DataFrame({
-        'id_code': ids,
-        'sirna': predictions
-    })
-    submission.to_csv('submission_efficientnet_b0.csv', index=False)
-    print(f"Saved submission_efficientnet_b0.csv | Best val acc: {best_acc:.2f}%")
+    print(f"\n{'='*60}")
+    print(f"Training Complete! Best Val Acc: {best_acc:.2f}%")
+    print(f"{'='*60}")
 
 if __name__ == '__main__':
     main()
